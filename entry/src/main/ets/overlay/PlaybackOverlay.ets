@@ -1,8 +1,9 @@
-import { ComponentContent, OverlayManager, router, window } from "@kit.ArkUI"
-import { AudioManager } from "../player/AudioManager"
 import { avSession } from "@kit.AVSessionKit"
-import { CommonConstants } from "../common/CommonConstants"
 import { BreakpointSystem } from "@ohpg/fin-core"
+import { AudioManager } from "../player/AudioManager"
+import { CommonConstants } from "../common/CommonConstants"
+import { ComponentContent, OverlayManager, router, window } from "@kit.ArkUI"
+import { AbilityConstant, EnvironmentCallback, Configuration } from "@kit.AbilityKit"
 
 export class PlaybackOverlay {
 
@@ -11,6 +12,18 @@ export class PlaybackOverlay {
   private overlayManager?: OverlayManager
 
   private overlayNode?: ComponentContent<object>
+
+  private environmentCallback: EnvironmentCallback = {
+
+    onMemoryLevel: (level: AbilityConstant.MemoryLevel): void => {
+    },
+
+    onConfigurationUpdated: (config: Configuration): void => {
+      this.overlayNode?.updateConfiguration()
+    }
+  }
+
+  private environmentCallbackId?: number
 
   constructor(context: Context) {
     this.context = context
@@ -22,9 +35,14 @@ export class PlaybackOverlay {
     this.overlayNode = new ComponentContent(context, wrapBuilder(playbackOverlayBuilder))
     this.overlayManager = context.getOverlayManager()
     this.overlayManager.addComponentContent(this.overlayNode)
+    this.environmentCallbackId = this.context.getApplicationContext().on('environment', this.environmentCallback);
   }
 
   public detach() {
+    if (this.environmentCallbackId !== undefined) {
+      this.context.getApplicationContext().off("environment", this.environmentCallbackId)
+    }
+    this.environmentCallbackId = undefined
     if (this.overlayNode && this.overlayManager) {
       this.overlayManager.removeComponentContent(this.overlayNode)
       this.overlayNode.dispose()
