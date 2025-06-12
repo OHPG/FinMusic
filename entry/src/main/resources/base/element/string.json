@@ -1,0 +1,140 @@
+{
+  "string": [
+    {
+      "name": "module_desc",
+      "value": "module description"
+    },
+    {
+      "name": "EntryAbility_desc",
+      "value": "description"
+    },
+    {
+      "name": "EntryAbility_label",
+      "value": "label"
+    },
+    {
+      "name": "privacy",
+      "value": "https://agreement-drcn.hispace.dbankcloud.cn/index.html?lang=zh&agreementId=1574182929720960256"
+    },
+    {
+      "name": "permission_background_reason",
+      "value": "后台播放音乐"
+    },
+    {
+      "name": "search",
+      "value": "搜索"
+    },
+    {
+      "name": "more",
+      "value": "更多"
+    },
+    {
+      "name": "dialog_loading",
+      "value": "加载中..."
+    },
+    {
+      "name": "home_main",
+      "value": "主页"
+    },
+    {
+      "name": "home_main_source",
+      "value": "音乐库"
+    },
+    {
+      "name": "home_main_day",
+      "value": "每日推荐"
+    },
+    {
+      "name": "home_main_recent",
+      "value": "最近播放"
+    },
+    {
+      "name": "home_main_most",
+      "value": "最常播放"
+    },
+    {
+      "name": "home_main_new",
+      "value": "最新专辑"
+    },
+    {
+      "name": "home_main_random",
+      "value": "随机专辑"
+    },
+    {
+      "name": "home_album",
+      "value": "专辑"
+    },
+    {
+      "name": "home_artist",
+      "value": "艺术家"
+    },
+    {
+      "name": "home_genre",
+      "value": "类型"
+    },
+    {
+      "name": "home_track",
+      "value": "音乐"
+    },
+    {
+      "name": "prefer",
+      "value": "设置"
+    },
+    {
+      "name": "prefer_current_server",
+      "value": "服务器："
+    },
+    {
+      "name": "prefer_current_address",
+      "value": "地址："
+    },
+    {
+      "name": "prefer_current_user",
+      "value": "用户："
+    },
+    {
+      "name": "prefer_server",
+      "value": "服务器"
+    },
+    {
+      "name": "prefer_user",
+      "value": "用户"
+    },
+    {
+      "name": "prefer_address",
+      "value": "地址"
+    },
+    {
+      "name": "prefer_about",
+      "value": "关于我们"
+    },
+    {
+      "name": "prefer_about_desc",
+      "value": "FinMusic是一款支持Jellyfin协议的音乐客户端。\n它有以下特点：\n  * 媒体库：推荐、历史、分类。\n  * 夜间模式：呵护你得眼睛，夜间不伤眼。\n  * 媒体中心：媒体通知，操作便捷。"
+    },
+    {
+      "name": "prefer_about_qq_group",
+      "value": "QQ群："
+    },
+    {
+      "name": "prefer_about_qq_group_value",
+      "value": "1053123111"
+    },
+    {
+      "name": "prefer_about_qq_group_copied",
+      "value": "QQ群号已拷贝到剪贴板"
+    },
+    {
+      "name": "prefer_about_official_web",
+      "value": "官方网站："
+    },
+    {
+      "name": "prefer_about_official_web_value",
+      "value": "https://ohpg.org"
+    },
+    {
+      "name": "prefer_privacy",
+      "value": "隐私政策"
+    }
+  ]
+}

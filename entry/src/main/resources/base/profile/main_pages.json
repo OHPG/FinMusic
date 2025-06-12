@@ -1,0 +1,12 @@
+{
+  "src": [
+    "pages/splash/SplashPage",
+    "pages/home/HomePage",
+    "pages/detail/album/AlbumPage",
+    "pages/detail/artist/ArtistPage",
+    "pages/detail/genre/GenrePage",
+    "pages/player/PlayerPage",
+    "pages/setting/SettingPage",
+    "pages/about/AboutPage"
+  ]
+}

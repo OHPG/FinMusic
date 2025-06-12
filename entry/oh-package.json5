@@ -1,0 +1,16 @@
+{
+  "name": "entry",
+  "version": "0.1.0",
+  "description": "Please describe the basic information.",
+  "main": "",
+  "author": "",
+  "license": "",
+  "dependencies": {
+    // https://ohpm.openharmony.cn/#/cn/detail/@abner%2Frefresh
+    "@abner/refresh": "1.4.3",
+    "fast-blurhash": "1.1.0",
+    "@ohpg/jellyfin": 'file:../../FinSdk/jellyfin',
+    "@ohpg/fin-core": 'file:../../FinCore/lib_core',
+    "@ohpg/fin-framework": 'file:../../FinCore/lib_framework'
+  }
+}
