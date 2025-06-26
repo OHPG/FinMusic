@@ -2,7 +2,7 @@ import { media } from "@kit.MediaKit";
 import { Repository } from "../data/Repository";
 import { ErrorCallback } from "@ohos.base";
 import { AudioItem } from "./AudioItem";
-import { MediaProtocol, MediaSourceInfo } from "@ohpg/jellyfin";
+import { BaseItemDto } from "@ohpg/jellyfin";
 
 /**
  * @Author peerless2012
@@ -17,9 +17,15 @@ export class AudioPlayer {
 
   private readonly repository: Repository = AppStorage.get(Repository.REPOSITORY)!
 
+  private reportingPlayback: boolean = false
+
+  private lastPosition = 0
+
   private avPlayer?: media.AVPlayer
 
   private avState: media.AVPlayerState = 'idle';
+
+  private itemDto?: BaseItemDto
 
   private avTimer?: number = 0
 
@@ -117,12 +123,18 @@ export class AudioPlayer {
       console.log("VideoController: getTrackDescription = " + JSON.stringify(info) )
     })
   }
+  private count = 0
 
   private startTimer() {
     this.printTrackInfo()
     if (this.avTimer) return
     this.avTimer = setInterval(() => {
       this.progressCallback?.(this.getPosition())
+      this.count ++
+      if (this.count >= 5) {
+        this.reportPlaybackUpdate()
+        this.count = 0
+      }
     }, 1000)
   }
 
@@ -151,31 +163,15 @@ export class AudioPlayer {
     return this.avData
   }
 
-  public async getSource(id: string, sourceInfo: MediaSourceInfo): Promise<string> {
-    let url: string | undefined | null
-    switch (sourceInfo.Protocol) {
-      case MediaProtocol.File:
-        url = await this.repository.loadStreamUrl(id, sourceInfo.Id!)
-        break
-      case MediaProtocol.Http:
-        url = sourceInfo.Path
-        break
-    }
-    if (url) {
-      return url
-    }
-    throw new Error("Source not support.")
-  }
-
   public async setData(item: AudioItem): Promise<void> {
-    let sourceResult = await this.repository.loadMediaSource(item.id)
-    // let url = await this.getSource(item.id, (sourceResult!.MediaSources![0])!)
+    this.itemDto = item.extra
     let url = await this.repository.loadStreamUrl(item.id, item.id)
     console.log("VideoController: setData data 1" )
     let avPlayer = await this.requireAvPlayer()
     console.log("VideoController: setData data 2")
     avPlayer.url = url
     console.log("VideoController: setData data 3 url = " + avPlayer.url)
+    this.reportPlaybackStart()
   }
 
   public async prepare(): Promise<void> {
@@ -233,15 +229,16 @@ export class AudioPlayer {
 
   public async start(): Promise<void> {
     await this.avPlayer?.play()
+    this.reportPlaybackUpdate()
   }
 
   public async seek(position: number): Promise<void> {
-    console.log("VideoController: seek " + position)
     this.avPlayer?.seek(position, media.SeekMode.SEEK_CLOSEST)
   }
 
   public async pause(): Promise<void> {
     await this.avPlayer?.pause()
+    this.reportPlaybackUpdate()
   }
 
   public async stop(): Promise<void> {
@@ -250,9 +247,64 @@ export class AudioPlayer {
 
   public async reset(): Promise<void> {
     await this.avPlayer?.reset()
+    this.reportPlaybackStop()
+    this.itemDto = undefined
+  }
+
+  private reportPlaybackStart() {
+    if (!this.itemDto) {
+      return
+    }
+    // console.log("AbstractController: reportPlaybackStart " + this.itemDto.Id)
+    this.reportingPlayback = true
+    this.repository.onPlaybackStart(this.itemDto.Id!)
+      .then(() => {
+        this.reportingPlayback = false
+        // console.log("AbstractController: reportPlaybackStart success.")
+      })
+      .catch((error: Error) => {
+        this.reportingPlayback = false
+        // console.warn("AbstractController: reportPlaybackStart fail " + JSON.stringify(error))
+      })
+  }
+
+  private reportPlaybackUpdate() {
+    if (!this.itemDto || this.reportingPlayback) {
+      return
+    }
+    this.reportingPlayback = true
+    this.lastPosition = this.getPosition() * 10000
+    // console.log("AbstractController: reportPlaybackUpdate " + this.itemDto.Id + ", position = " + this.lastPosition)
+    this.repository.onPlaybackUpdate(this.itemDto.Id!, this.lastPosition, this.avState === 'playing')
+      .then(() => {
+        this.reportingPlayback = false
+        // console.log("AbstractController: reportPlaybackUpdate success.")
+      })
+      .catch((error: Error) => {
+        this.reportingPlayback = false
+        // console.warn("AbstractController: reportPlaybackUpdate fail " + JSON.stringify(error))
+      })
+  }
+
+  private reportPlaybackStop() {
+    if (!this.itemDto) {
+      return
+    }
+    this.reportingPlayback = true
+    // console.log("AbstractController: reportPlaybackStop " + this.itemDto.Id)
+    this.repository.onPlaybackStop(this.itemDto.Id!, this.lastPosition)
+      .then(() => {
+        this.reportingPlayback = false
+        // console.log("AbstractController: reportPlaybackStop success.")
+      })
+      .catch((error: Error) => {
+        this.reportingPlayback = false
+        // console.warn("AbstractController: reportPlaybackStop fail " + JSON.stringify(error))
+      })
   }
 
   public async release(): Promise<void> {
+    await this.reset()
     this.progressCallback = undefined
     this.errorCallback = undefined
     this.stateChangeCallback = undefined

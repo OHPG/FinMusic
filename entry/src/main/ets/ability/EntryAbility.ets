@@ -1,11 +1,9 @@
+import { window } from '@kit.ArkUI';
 import { AbilityConstant, UIAbility, Want } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { window } from '@kit.ArkUI';
 import { BreakpointSystem } from '@ohpg/fin-core';
 import { AvoidAreaSystem } from '@ohpg/fin-core';
-import { AudioManager } from '../player/AudioManager';
 import { DeviceUtil } from '@ohpg/fin-framework';
-import { PlaybackOverlay } from '../overlay/PlaybackOverlay';
 
 export default class EntryAbility extends UIAbility {
 
@@ -13,20 +11,11 @@ export default class EntryAbility extends UIAbility {
 
   private avoidAreaSystem: AvoidAreaSystem = new AvoidAreaSystem();
 
-  private audioManager?: AudioManager
-
-  private playbackOverlay?: PlaybackOverlay
-
   onCreate(want: Want, launchParam: AbilityConstant.LaunchParam): void {
     hilog.info(0x0000, 'testTag', '%{public}s', 'Ability onCreate');
-    this.audioManager = new AudioManager(this.context)
-    this.playbackOverlay = new PlaybackOverlay(this.context)
-    AppStorage.setOrCreate(AudioManager.AUDIO_MANAGER, this.audioManager)
   }
 
   onDestroy(): void {
-    this.audioManager?.release()
-    AppStorage.delete(AudioManager.AUDIO_MANAGER)
     hilog.info(0x0000, 'testTag', '%{public}s', 'Ability onDestroy');
   }
 
@@ -43,7 +32,7 @@ export default class EntryAbility extends UIAbility {
         return;
       }
       this.breakpointSystem.register(window)
-      this.playbackOverlay?.attach(window.getUIContext())
+
       hilog.info(0x0000, 'testTag', 'Succeeded in loading the content.');
     });
   }
@@ -51,7 +40,6 @@ export default class EntryAbility extends UIAbility {
   onWindowStageDestroy(): void {
     this.avoidAreaSystem.unregister()
     this.breakpointSystem.unregister()
-    this.playbackOverlay?.detach()
     // Main window is destroyed, release UI related resources
     hilog.info(0x0000, 'testTag', '%{public}s', 'Ability onWindowStageDestroy');
   }
@@ -65,4 +53,5 @@ export default class EntryAbility extends UIAbility {
     // Ability has back to background
     hilog.info(0x0000, 'testTag', '%{public}s', 'Ability onBackground');
   }
+
 }

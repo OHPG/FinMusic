@@ -475,4 +475,12 @@ export class Repository extends FinRepository {
     })
   }
 
+  public getPlayList(): Promise<Array<BaseItemDto>> {
+
+  }
+
+  public setPlaylist(): Promise<void> {
+
+  }
+
 }

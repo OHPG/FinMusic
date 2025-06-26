@@ -1,8 +1,8 @@
-import { router } from '@kit.ArkUI'
 import { PrivacyDialog } from '@ohpg/fin-framework'
 import { Repository } from '../../data/Repository'
 import { AppPrefer } from '../../prefer/AppPrefer'
 import { FinRouter } from '@ohpg/fin-framework'
+import { router } from '@kit.ArkUI'
 
 @Entry
 @Component

@@ -1,6 +1,7 @@
 import { AudioSession } from "./AudioSession";
 import { avSession } from "@kit.AVSessionKit";
 import { AudioQueue } from "./AudioQueue";
+import { Repository } from "../data/Repository";
 
 /**
  * @Author peerless2012
@@ -17,6 +18,8 @@ export class AudioControl {
 
   private readonly session: AudioSession
 
+  private readonly repository: Repository
+
   private sessionControl?: avSession.AVSessionController
 
   private metadata?: avSession.AVMetadata
@@ -31,6 +34,7 @@ export class AudioControl {
     this.context = context
     this.queue = queue
     this.session = session
+    this.repository = AppStorage.get(Repository.REPOSITORY)!
   }
 
   public getMetadata(): avSession.AVMetadata | undefined {

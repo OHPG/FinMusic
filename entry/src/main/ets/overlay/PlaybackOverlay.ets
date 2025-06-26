@@ -7,7 +7,9 @@ import { AbilityConstant, EnvironmentCallback, Configuration } from "@kit.Abilit
 
 export class PlaybackOverlay {
 
-  private readonly context: Context
+  private readonly context: UIContext
+
+  private readonly audioManager: AudioManager = AppStorage.get(AudioManager.AUDIO_MANAGER)!
 
   private overlayManager?: OverlayManager
 
@@ -25,22 +27,23 @@ export class PlaybackOverlay {
 
   private environmentCallbackId?: number
 
-  constructor(context: Context) {
+  constructor(context: UIContext) {
     this.context = context
     // 注：目前属性变化传递不到封装好的列表组件，暂时写死。
     AppStorage.setOrCreate("playerHeight", 60)
   }
 
-  public attach(context: UIContext) {
-    this.overlayNode = new ComponentContent(context, wrapBuilder(playbackOverlayBuilder))
-    this.overlayManager = context.getOverlayManager()
+  public attach() {
+    this.overlayNode = new ComponentContent(this.context, wrapBuilder(playbackOverlayBuilder))
+    this.overlayManager = this.context.getOverlayManager()
     this.overlayManager.addComponentContent(this.overlayNode)
-    this.environmentCallbackId = this.context.getApplicationContext().on('environment', this.environmentCallback);
+    this.environmentCallbackId = this.context.getHostContext()?.getApplicationContext().on('environment', this.environmentCallback);
+    this.audioManager.resumeAudioQueue()
   }
 
   public detach() {
     if (this.environmentCallbackId !== undefined) {
-      this.context.getApplicationContext().off("environment", this.environmentCallbackId)
+      this.context.getHostContext()?.getApplicationContext().off("environment", this.environmentCallbackId)
     }
     this.environmentCallbackId = undefined
     if (this.overlayNode && this.overlayManager) {

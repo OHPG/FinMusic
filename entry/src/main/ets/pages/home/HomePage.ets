@@ -1,9 +1,9 @@
+import { PlaybackOverlay } from '../../overlay/PlaybackOverlay'
 import { HomeToolBar } from '../../widget/bar/HomeToolBar'
 import { AlbumPage } from './album/AlbumPage'
 import { ArtistPage } from './artist/ArtistPage'
 import { GenrePage } from './genre/GenrePage'
 import { MainPage } from './main/MainPage'
-import { TrackPage } from './track/TrackPage'
 
 @Entry
 @Component
@@ -16,6 +16,12 @@ struct HomePage {
   @State currentIndex: number = 0
 
   private controller: TabsController = new TabsController()
+
+  private playbackOverlay: PlaybackOverlay = new PlaybackOverlay(this.getUIContext())
+
+  aboutToAppear(): void {
+    this.playbackOverlay.attach()
+  }
 
   @Builder tabBuilder(index: number, name: ResourceStr) {
     Column() {
@@ -76,6 +82,10 @@ struct HomePage {
     }
     .height('100%')
     .width('100%')
+  }
+
+  aboutToDisappear(): void {
+    this.playbackOverlay.detach()
   }
 
 }

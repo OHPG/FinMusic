@@ -1,5 +1,6 @@
 import { common, StartupTask } from "@kit.AbilityKit";
 import { Repository } from "../data/Repository";
+import { AudioManager } from "../player/AudioManager";
 
 /**
  * @Author peerless2012
@@ -20,6 +21,7 @@ export class AppStartupTask extends StartupTask {
     } catch (error) {
       console.error("AppStartupTask: init error " + error['message'])
     }
+    AppStorage.setOrCreate(AudioManager.AUDIO_MANAGER, new AudioManager(context.getApplicationContext()))
     console.log("AppStartupTask: init 2.")
   }
 

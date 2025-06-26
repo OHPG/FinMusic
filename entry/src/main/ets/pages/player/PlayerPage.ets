@@ -119,6 +119,7 @@ struct PlayerPage {
               .fontSize($r('sys.float.Title_S'))
               .maxLines(1)
           }
+          .margin({right: 48})
           .alignItems(HorizontalAlign.Start)
           .width(CommonConstants.FULL_PERCENT)
 

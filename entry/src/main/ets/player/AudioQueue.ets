@@ -10,11 +10,17 @@ import { avSession } from "@kit.AVSessionKit";
  */
 export class AudioQueue {
 
+  private readonly context: Context
+
   private loopMode = avSession.LoopMode.LOOP_MODE_SEQUENCE
 
   private audioQueue = new Array<AudioItem>()
 
   private audioIndex = -1
+
+  constructor(context: Context) {
+    this.context = context
+  }
 
   public setCurrentItem(id: string) {
     this.audioIndex = this.audioQueue.findIndex((value) => value.id == id)
