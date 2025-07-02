@@ -26,9 +26,16 @@ export class AudioManager {
 
   public readonly repository: Repository
 
+  private ignoreQueueChanged = false
+
   constructor(context: Context) {
     this.audioPlayer = new AudioPlayer(context)
     this.audioQueue = new AudioQueue(context)
+    this.audioQueue.on('queueChanged', () => {
+      if (!this.ignoreQueueChanged) {
+        this.saveAudioQueue()
+      }
+    })
     this.audioSession = new AudioSession(context, this.audioQueue, this.audioPlayer)
     this.audioControl = new AudioControl(context, this.audioQueue, this.audioSession)
     this.repository = AppStorage.get(Repository.REPOSITORY)!
@@ -63,21 +70,38 @@ export class AudioManager {
       })
       if (lastAudioItem) {
         if (item.UserData?.LastPlayedDate
-          && lastAudioItem.UserData?.LastPlayedDate) {
-
+          && lastAudioItem.UserData?.LastPlayedDate
+          && item.UserData.LastPlayedDate > lastAudioItem.UserData.LastPlayedDate) {
+          lastAudioItem = item
         }
       } else {
         lastAudioItem = item
       }
     }
     if (lastAudioItem) {
+      this.ignoreQueueChanged = true
       this.audioQueue.resetItem(audioItems)
-      this.audioControl.playItem(lastAudioItem.Id!)
+      this.ignoreQueueChanged = false
+      // TODO 进度恢复
+      await this.audioControl.playItem(lastAudioItem.Id!)
     }
+  }
+
+  private saveAudioQueue() {
+    let queue = this.audioQueue.getQueue()
+    if (!queue || queue.length <= 0) {
+      return
+    }
+    let itemArray = new Array<BaseItemDto>()
+    for (const item of queue) {
+      itemArray.push(item.extra)
+    }
+    this.repository.setPlaylist(itemArray)
   }
 
   public release() {
     this.audioSession.release()
+    this.audioQueue.release()
   }
 
 }

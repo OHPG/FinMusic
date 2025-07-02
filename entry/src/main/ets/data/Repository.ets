@@ -5,6 +5,7 @@ import { BaseItemDto, BaseItemKind,
   ItemFields,
   ItemFilter,
   ItemSortBy,
+  MediaType,
   PlaybackInfoResponse,
   SortOrder,
   UserItemDataDto} from "@ohpg/jellyfin";
@@ -47,6 +48,7 @@ export class Repository extends FinRepository {
   protected onActiveInfoChanged(): void {
     this.currentLibrary = undefined
     this.availableLibrary = undefined
+    this.playlistId = undefined
     AppStorage.setOrCreate("key_multi_source", false)
   }
 
@@ -475,12 +477,60 @@ export class Repository extends FinRepository {
     })
   }
 
-  public getPlayList(): Promise<Array<BaseItemDto>> {
+  private playlistId: string | undefined
 
+  private async getPlaylistId(): Promise<string | undefined> {
+    if (this.playlistId) {
+      return this.playlistId
+    }
+    let result = await this.jellyfin.getItemsApi().getItems({
+      userId: this.activeInfo!.userInfo.userId,
+      includeItemTypes: [BaseItemKind.Playlist],
+      sortBy: [ItemSortBy.PlayCount],
+      sortOrder: [SortOrder.Descending],
+      parentId: this.currentLibrary?.Id,
+      recursive: true,
+      limit: 12
+    })
+    let item = result.Items?.find((item) => {
+      return item.Name === this.clientInfo.name
+    })
+    if (!item) {
+      return undefined
+    }
+    return item.Id
   }
 
-  public setPlaylist(): Promise<void> {
+  public async getPlayList(): Promise<Array<BaseItemDto> | undefined> {
+    let id = await this.getPlaylistId()
+    if (!id) {
+      return undefined
+    }
+    let playlistResult = await this.jellyfin.getPlaylistApi().getPlaylistItems({playlistId: id
+    , userId: this.activeInfo?.userInfo.userId})
+    if (playlistResult?.Items) {
+      return playlistResult.Items
+    }
+    return undefined
+  }
 
+  public async setPlaylist(playList: Array<BaseItemDto>): Promise<void> {
+    let playlistId = await this.getPlaylistId()
+    let ids = new Array<string>()
+    playList.forEach((item) => {
+      ids.push(item.Id!)
+    })
+    if (!playlistId) {
+      this.playlistId = (await this.jellyfin.getPlaylistApi().createPlaylist({name: this.clientInfo.name
+      , ids: ids
+      , userId: this.activeInfo?.userInfo?.userId
+      , mediaType: MediaType.Audio})).Id
+    } else {
+      await this.jellyfin.getPlaylistApi().updatePlaylist({playlistId: playlistId
+      , updatePlaylistDto: {
+        Ids: ids
+        }})
+    }
   }
 
 }

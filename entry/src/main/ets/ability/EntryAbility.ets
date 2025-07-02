@@ -4,6 +4,7 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 import { BreakpointSystem } from '@ohpg/fin-core';
 import { AvoidAreaSystem } from '@ohpg/fin-core';
 import { DeviceUtil } from '@ohpg/fin-framework';
+import { AudioManager } from '../player/AudioManager';
 
 export default class EntryAbility extends UIAbility {
 
@@ -32,7 +33,7 @@ export default class EntryAbility extends UIAbility {
         return;
       }
       this.breakpointSystem.register(window)
-
+      AppStorage.setOrCreate(AudioManager.AUDIO_MANAGER, new AudioManager(this.context))
       hilog.info(0x0000, 'testTag', 'Succeeded in loading the content.');
     });
   }

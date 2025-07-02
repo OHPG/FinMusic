@@ -104,7 +104,7 @@ struct PlayerPage {
         .layoutWeight(1)
 
         // info
-        Stack() {
+        Row({space: 16}) {
           Column({space: CommonConstants.SPACE_8}) {
             Text(this.title)
               .fontColor(this.primaryColor)
@@ -119,9 +119,8 @@ struct PlayerPage {
               .fontSize($r('sys.float.Title_S'))
               .maxLines(1)
           }
-          .margin({right: 48})
           .alignItems(HorizontalAlign.Start)
-          .width(CommonConstants.FULL_PERCENT)
+          .layoutWeight(1)
 
           SymbolGlyph(this.favourite ? $r('sys.symbol.heart_fill') : $r('sys.symbol.heart'))
             .fontSize(32)
@@ -130,7 +129,8 @@ struct PlayerPage {
               this.audioManager.getAudioControl().toggleFavourite()
             })
         }
-        .alignContent(Alignment.TopEnd)
+        .width(CommonConstants.FULL_PERCENT)
+        .alignItems(VerticalAlign.Top)
 
         // progress
         Row() {

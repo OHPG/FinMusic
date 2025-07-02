@@ -18,8 +18,18 @@ export class AudioQueue {
 
   private audioIndex = -1
 
+  private queueCallback?: Callback<void>
+
   constructor(context: Context) {
     this.context = context
+  }
+
+  on(type: "queueChanged", callback: Callback<void>) {
+    this.queueCallback = callback
+  }
+
+  off(type: "queueChanged") {
+    this.queueCallback = undefined
   }
 
   public setCurrentItem(id: string) {
@@ -36,11 +46,13 @@ export class AudioQueue {
 
   public addItem(items: AudioItem[]) {
     this.audioQueue.push(...items)
+    this.queueCallback?.()
   }
 
   public resetItem(items: AudioItem[]) {
     this.audioQueue.splice(0)
     this.audioQueue.push(...items)
+    this.queueCallback?.()
   }
 
   public deleteItem(item: AudioItem) {
@@ -48,11 +60,13 @@ export class AudioQueue {
     if (index >= 0) {
       this.audioQueue.splice(index, 1)
     }
+    this.queueCallback?.()
   }
 
   public deleteAll() {
     this.audioQueue.splice(0)
     this.audioIndex = -1
+    this.queueCallback?.()
   }
 
   public getQueue(): Array<AudioItem> {
@@ -104,6 +118,10 @@ export class AudioQueue {
       }
       return this.getItem(index)
     }
+  }
+
+  public release() {
+    this.queueCallback = undefined
   }
 
 }
