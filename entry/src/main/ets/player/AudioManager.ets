@@ -82,8 +82,7 @@ export class AudioManager {
       this.ignoreQueueChanged = true
       this.audioQueue.resetItem(audioItems)
       this.ignoreQueueChanged = false
-      // TODO 进度恢复
-      await this.audioControl.playItem(lastAudioItem.Id!)
+      await this.audioControl.prepareItem(lastAudioItem.Id!)
     }
   }
 

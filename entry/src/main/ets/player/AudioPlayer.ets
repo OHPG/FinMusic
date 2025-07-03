@@ -21,7 +21,13 @@ export class AudioPlayer {
 
   private lastPosition = 0
 
+  private playWhenReady = false
+
+  private seekWhenReady = -1
+
   private avPlayer?: media.AVPlayer
+
+  private avPlayerPrepared = false
 
   private avState: media.AVPlayerState = 'idle';
 
@@ -50,18 +56,25 @@ export class AudioPlayer {
     // player
     this.avPlayer = await media.createAVPlayer()
     this.avPlayer.on('stateChange', (state, reason) => {
-      console.log("VideoController: onStateChange state = " + state + ", reason = " + reason)
+      console.log("AudioPlayer: onStateChange state = " + state + ", reason = " + reason)
       this.avState = state
       if (state === 'initialized') {
         this.avPlayer?.prepare()
       }
       if (state === 'prepared') {
-        console.log("VideoController: duration = " + this.avPlayer?.duration)
-        this.avPlayer!.videoScaleType = media.VideoScaleType.VIDEO_SCALE_TYPE_FIT_CROP
+        this.avPlayerPrepared = true
+        console.log("AudioPlayer: duration = " + this.avPlayer?.duration)
         if (this.avSpeed !== undefined) {
           this.avPlayer?.setSpeed(this.avSpeed)
         }
-        this.avPlayer?.play()
+        if (this.seekWhenReady > 0) {
+          this.seek(this.seekWhenReady)
+          this.seekWhenReady = -1
+        }
+        if (this.playWhenReady) {
+          this.start()
+          this.playWhenReady = false
+        }
       }
       if (state === 'playing') {
         this.startTimer()
@@ -71,19 +84,20 @@ export class AudioPlayer {
       this.stateChangeCallback?.(state, reason)
     })
     this.avPlayer.on('seekDone', (position) => {
-      console.log("VideoController: onSeekDone position = " + position)
+      console.log("AudioPlayer: onSeekDone position = " + position)
     })
     this.avPlayer.on('bufferingUpdate', (type, value) => {
-      // console.log("VideoController: onBufferUpdate type = " + type + ", value = " + value)
+      // console.log("AudioPlayer: onBufferUpdate type = " + type + ", value = " + value)
     })
     this.avPlayer.on('trackChange', (index, selected) => {
-      console.log("VideoController: onTrackChange index = " + index + ", selected = " + selected)
+      console.log("AudioPlayer: onTrackChange index = " + index + ", selected = " + selected)
     })
     this.avPlayer.on('durationUpdate', (duration) => {
-      console.log("VideoController: onDurationUpdate duration = " + duration)
+      console.log("AudioPlayer: onDurationUpdate duration = " + duration)
     })
     this.avPlayer.on('error', (error) => {
-      console.log("VideoController: onError error = " + JSON.stringify(error))
+      this.avPlayerPrepared = false
+      console.log("AudioPlayer: onError error = " + JSON.stringify(error))
       this.errorCallback?.(error)
     })
     return this.avPlayer
@@ -113,20 +127,9 @@ export class AudioPlayer {
     this.errorCallback = undefined
   }
 
-  private async printTrackInfo() {
-    let info = await this.avPlayer?.getPlaybackInfo()
-    console.log("VideoController: getPlaybackInfo = " + JSON.stringify(info) )
-    let selected = await this.avPlayer!.getSelectedTracks()
-    console.log("VideoController: getSelectedTracks = " + selected.join(",") )
-    let tracks = await this.avPlayer!.getTrackDescription()
-    tracks.forEach((info) => {
-      console.log("VideoController: getTrackDescription = " + JSON.stringify(info) )
-    })
-  }
   private count = 0
 
   private startTimer() {
-    this.printTrackInfo()
     if (this.avTimer) return
     this.avTimer = setInterval(() => {
       this.progressCallback?.(this.getPosition())
@@ -166,19 +169,18 @@ export class AudioPlayer {
   public async setData(item: AudioItem): Promise<void> {
     this.itemDto = item.extra
     let url = await this.repository.loadStreamUrl(item.id, item.id)
-    console.log("VideoController: setData data 1" )
     let avPlayer = await this.requireAvPlayer()
-    console.log("VideoController: setData data 2")
     avPlayer.url = url
-    console.log("VideoController: setData data 3 url = " + avPlayer.url)
     this.reportPlaybackStart()
   }
 
   public async prepare(): Promise<void> {
-    let avPlayer = await this.requireAvPlayer()
-    console.log("VideoController: prepare 1" )
-    await avPlayer.prepare()
-    console.log("VideoController: prepare 2" )
+    if (this.avState === 'initialized') {
+      let avPlayer = await this.requireAvPlayer()
+      await avPlayer.prepare()
+    } else {
+      // prepare auto
+    }
   }
 
   public getState(): media.AVPlayerState {
@@ -186,7 +188,7 @@ export class AudioPlayer {
   }
 
   public isPrepared(): boolean {
-    return false
+    return this.avPlayerPrepared
   }
 
   public getSpeed(): media.PlaybackSpeed {
@@ -228,12 +230,24 @@ export class AudioPlayer {
   }
 
   public async start(): Promise<void> {
-    await this.avPlayer?.play()
-    this.reportPlaybackUpdate()
+    if (this.isPrepared()) {
+      console.log("AudioPlayer: start")
+      await this.avPlayer?.play()
+      this.reportPlaybackUpdate()
+    } else {
+      console.log("AudioPlayer: start (when ready)")
+      this.playWhenReady = true
+    }
   }
 
   public async seek(position: number): Promise<void> {
-    this.avPlayer?.seek(position, media.SeekMode.SEEK_CLOSEST)
+    if (this.isPrepared()) {
+      console.log("AudioPlayer: seek")
+      this.avPlayer?.seek(position, media.SeekMode.SEEK_CLOSEST)
+    } else {
+      console.log("AudioPlayer: seek (when ready)")
+      this.seekWhenReady = position
+    }
   }
 
   public async pause(): Promise<void> {
@@ -246,9 +260,17 @@ export class AudioPlayer {
   }
 
   public async reset(): Promise<void> {
-    await this.avPlayer?.reset()
-    this.reportPlaybackStop()
-    this.itemDto = undefined
+    try {
+      console.log("AudioPlayer: reset")
+      this.playWhenReady = false
+      this.avPlayerPrepared = false
+      await this.avPlayer?.reset()
+      this.reportPlaybackStop()
+      this.itemDto = undefined
+    } catch (e) {
+      console.log("AudioPlayer: reset: " + JSON.stringify(e))
+      throw e as Error
+    }
   }
 
   private reportPlaybackStart() {

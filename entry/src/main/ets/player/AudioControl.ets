@@ -105,9 +105,14 @@ export class AudioControl {
     control.sendControlCommand({command: "toggleFavorite", parameter: this.metadata?.assetId})
   }
 
+  public async prepareItem(id: string) {
+    await this.getSessionControl()
+    await this.session.prepareFromAssetId(id)
+  }
+
   public async playItem(id: string) {
     await this.getSessionControl()
-    this.session.playFromAssetId(id)
+    await this.session.playFromAssetId(id)
   }
 
   public async play(): Promise<void> {

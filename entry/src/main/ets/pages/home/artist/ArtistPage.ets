@@ -81,7 +81,6 @@ struct ArtistListItem {
   }
 
   aboutToRecycle(): void {
-    console.log("MediaList item recycle: " + this.item?.Name)
   }
 
 

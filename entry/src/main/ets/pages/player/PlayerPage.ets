@@ -75,9 +75,9 @@ struct PlayerPage {
   build() {
     Stack() {
 
-      // Image(this.blurhash)
-      //   .width(CommonConstants.FULL_PERCENT)
-      //   .height(CommonConstants.FULL_PERCENT)
+      Image(this.blurhash)
+        .width(CommonConstants.FULL_PERCENT)
+        .height(CommonConstants.FULL_PERCENT)
 
       // content
       Column({ space: CommonConstants.SPACE_16 }) {
@@ -87,7 +87,6 @@ struct PlayerPage {
           Image(this.art)
             .width(CommonConstants.FULL_PERCENT)
             .height(CommonConstants.FULL_PERCENT)
-            .backgroundImage(this.blurhash)
             .alt($r('app.media.alt'))
             .onError(() => {
               this.art = $r('app.media.alt')
@@ -204,6 +203,7 @@ struct PlayerPage {
 
         Blank(CommonConstants.SPACE_16)
       }
+      .backgroundColor(0x40808080)
       .width(CommonConstants.FULL_PERCENT)
       .height(CommonConstants.FULL_PERCENT)
       .padding({
@@ -233,7 +233,7 @@ struct PlayerPage {
       if (item) {
         let url = this.repository.buildImage(item.extra, ImageType.Primary)
         let bh = this.repository.buildImageBlur(item.extra, ImageType.Primary)
-        console.log(JSON.stringify(item.extra, undefined, 4) + "\n" + "blurhash: " + bh + ", url: " + url)
+        // console.log(JSON.stringify(item.extra, undefined, 4) + "\n" + "blurhash: " + bh + ", url: " + url)
         if (bh && bh !== this.blurhashKey) {
           let array = decodeBlurHash(bh, 32, 32, 1)
           this.blurhash = image.createPixelMapSync(array.buffer as ArrayBuffer, {
@@ -242,9 +242,9 @@ struct PlayerPage {
           })
           this.blurhashKey = bh
           let rgb = getBlurHashAverageColor(bh);
-          this.primaryColor = 0xff << 24 | rgb[0] << 16 | rgb[1] << 8 | rgb[2]
-          // const luminance = 0.299 * rgb[0] + 0.587 * rgb[1] + 0.114 * rgb[2];
-          // this.primaryColor = luminance > 186 ? 0x000000 : 0xFFFFFF;
+          // this.primaryColor = 0xff << 24 | rgb[0] << 16 | rgb[1] << 8 | rgb[2]
+          const luminance = 0.299 * rgb[0] + 0.587 * rgb[1] + 0.114 * rgb[2];
+          this.primaryColor = luminance > 186 ? 0x000000 : 0xFFFFFF;
         }
       }
     } catch (e) {

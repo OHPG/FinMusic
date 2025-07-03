@@ -121,7 +121,7 @@ export class AudioSession {
     return this.sessionControl
   }
 
-  public async playFromAssetId(id: string): Promise<void> {
+  public async prepareFromAssetId(id: string): Promise<void> {
     let item = this.queue.getCurrent()
     if (item?.id === id) {
       // media not change
@@ -149,12 +149,17 @@ export class AudioSession {
       // 重制
       let pre = this.player.getData()
       if (item.id !== pre?.id) {
+        this.progress = 0
         await this.player.reset()
         await this.player.setData(item)
       }
       await this.player.prepare()
     }
-    await this.player.start()
+  }
+
+  public async playFromAssetId(id: string): Promise<void> {
+    await this.prepareFromAssetId(id)
+    await this.player?.start()
   }
 
   private async toggleFavourite(id: string): Promise<void> {
