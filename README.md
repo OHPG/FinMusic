@@ -22,12 +22,12 @@
 </a>
 <br>
 <br>
-<a href="https://github.com/OHPG/FinVideo/releases">
+<a href="https://github.com/OHPG/FinMusic/releases">
   <img src="https://img.shields.io/github/downloads/OHPG/FinMusic/total?logo=github&label=GitHub" height="60"/>
 </a>
 
 ## 隐私政策
-FinVideo重视用户隐私保护，严格遵守相关法律法规，保护用户个人信息安全。
+FinMusic重视用户隐私保护，严格遵守相关法律法规，保护用户个人信息安全。
 
 如有隐私相关问题，请通过电子邮件联系: peerless2012@126.com
 
