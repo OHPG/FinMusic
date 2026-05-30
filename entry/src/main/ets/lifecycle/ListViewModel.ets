@@ -17,6 +17,10 @@ export abstract class ListViewModel extends AppViewModel implements RefreshRepos
     return this.dataSource
   }
 
+  hasMore(): boolean {
+    return false
+  }
+
   abstract loadData(type: LoadType): Promise<void>
 
 }

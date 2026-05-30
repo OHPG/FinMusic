@@ -1,17 +1,12 @@
 import { BaseItemDto, BaseItemKind,
   BaseItemPerson,
-  CollectionType,
   ImageType,
-  ItemFields,
-  ItemFilter,
-  ItemSortBy,
-  MediaType,
   PlaybackInfoResponse,
-  SortOrder,
   UserItemDataDto} from "@ohpg/jellyfin";
-import { uri } from "@kit.ArkTS";
 import { FinRepository } from "@ohpg/fin-framework";
-import { AppEventHub, AppEvents } from "@ohpg/fin-core";
+import { AppEventHub, AppEvents, ServerType } from "@ohpg/fin-core";
+import { FinMusicApi } from "../api/FinMusicApi";
+import { FinMusicApiFactory } from "../api/FinMusicApiFactory";
 
 /**
  * @Author peerless2012
@@ -26,23 +21,18 @@ export class Repository extends FinRepository {
 
   private availableLibrary?: Array<BaseItemDto> = undefined
 
+  private playlistId: string | undefined
+
   constructor(context: Context) {
-    super(context, "FinMusic")
+    super(context, new FinMusicApiFactory(context))
   }
 
-  private filterItem(items?: Array<BaseItemDto> | null): Array<BaseItemDto> | undefined {
-    let newItems: Array<BaseItemDto> | undefined
-    items?.forEach((item) => {
-      let type = item.CollectionType
-      if (type == CollectionType.Music) {
-        if (newItems == undefined) {
-          newItems = new Array()
-        }
-        newItems.push(item)
-      }
-    }
-    )
-    return newItems
+  public getSupportServer(): Array<ServerType> {
+    return [ServerType.JELLYFIN]
+  }
+
+  protected requireApi(): FinMusicApi {
+    return super.requireApi() as FinMusicApi
   }
 
   protected onActiveInfoChanged(): void {
@@ -60,7 +50,7 @@ export class Repository extends FinRepository {
     return this.currentLibrary
   }
 
-  public setCurrentLibrary(library: BaseItemDto) {
+  public setCurrentLibrary(library: BaseItemDto): void {
     this.currentLibrary = library
     AppEventHub.emit(AppEvents.EVENT_ACTIVE_INFO_CHANGED)
   }
@@ -69,7 +59,7 @@ export class Repository extends FinRepository {
     if (this.availableLibrary && this.availableLibrary.length > 0) {
       return
     }
-    let musicLibrary = await this.getMusicLibrary()
+    let musicLibrary = await this.requireApi().getMusicLibrary()
     if (musicLibrary && musicLibrary.length > 0) {
       this.availableLibrary = musicLibrary
       this.currentLibrary = musicLibrary[0]
@@ -78,40 +68,15 @@ export class Repository extends FinRepository {
   }
 
   public buildImage(dto: BaseItemDto, type: ImageType): string {
-    let imageUri = new uri.URI(this.jellyfin.apiClient.getServerInfo()!.address)
-    let tag: string | undefined | null = dto.ImageTags?.[type]
-    let id: string | undefined | null = dto.Id
-    if (!tag) {
-      tag = dto.AlbumPrimaryImageTag
-      id = dto.AlbumId
-    }
-    imageUri = imageUri.addEncodedSegment(`items/${id!}/Images/${type}`)
-    if (tag) {
-      imageUri = imageUri.addQueryValue("tag", tag)
-    }
-    return imageUri.toString()
+    return this.requireApi().buildImage(dto, type)
   }
 
   public buildImageBlur(dto: BaseItemDto, type: ImageType): string | undefined {
-    let ibh = dto.ImageBlurHashes
-    if (!ibh) {
-      return undefined
-    }
-    let tag: string | undefined | null = dto.ImageTags?.[type]
-    if (!tag) {
-      tag = dto.AlbumPrimaryImageTag
-    }
-    if (tag) {
-      let kv: Record<string, string> | undefined = (ibh as object)[type]
-      return kv?.[tag]
-    }
-    return undefined
+    return this.requireApi().buildImageBlur(dto, type)
   }
 
   public buildPersonImage(person: BaseItemPerson, type: ImageType): string {
-    let imageUri = new uri.URI(this.jellyfin.apiClient.getServerInfo()!.address)
-    imageUri = imageUri.addEncodedSegment(`items/${person.Id!}/Images/${type}`)
-    return imageUri.toString()
+    return this.requireApi().buildPersonImage(person, type)
   }
 
   /**
@@ -119,15 +84,7 @@ export class Repository extends FinRepository {
    * @returns
    */
   public async getMediaList(): Promise<Array<BaseItemDto>> {
-    let result = await this.jellyfin.getUserViewsApi().getUserViews({
-      userId: this.activeInfo!.userInfo.userId,
-      presetViews: [CollectionType.Music]
-    })
-    let groups = this.filterItem(result.Items)
-    if (!groups) {
-      return []
-    }
-    return groups
+    return this.requireApi().getMusicLibrary()
   }
 
   /**
@@ -135,16 +92,7 @@ export class Repository extends FinRepository {
    * @returns
    */
   public async getLatestMedia(): Promise<Array<BaseItemDto>> {
-    let result = await this.jellyfin.getUserLibraryApi().getLatestMedia({
-      userId: this.activeInfo!.userInfo.userId,
-      includeItemTypes: [BaseItemKind.MusicAlbum],
-      parentId: this.currentLibrary?.Id,
-      limit: 12
-    })
-    if (result) {
-      return result
-    }
-    return []
+    return this.requireApi().getLatestMedia(this.currentLibrary?.Id)
   }
 
   /**
@@ -152,71 +100,23 @@ export class Repository extends FinRepository {
    * @returns
    */
   public async getRandomMedia(): Promise<Array<BaseItemDto>> {
-    let albumArray = new Array<BaseItemDto>()
-    let result = await this.jellyfin.getItemsApi().getItems({
-      userId: this.activeInfo!.userInfo.userId,
-      parentId: this.currentLibrary?.Id,
-      sortBy: [ItemSortBy.Random],
-      includeItemTypes:[BaseItemKind.Audio],
-      recursive: true,
-      limit: 12
-    })
-    if (result.Items) {
-      albumArray = result.Items.sort((a, b) => a.Id!.localeCompare(b.Id!))
-    }
-    return albumArray
+    return this.requireApi().getRandomMedia(this.currentLibrary?.Id)
   }
 
   /**
-   * 查询最近的专辑
-   * @param id
+   * 查询最近播放音频
    * @returns
    */
   public async getLatestAudio(): Promise<Array<BaseItemDto>> {
-    let result = await this.jellyfin.getItemsApi().getItems({
-      userId: this.activeInfo!.userInfo.userId,
-      includeItemTypes: [BaseItemKind.Audio],
-      sortBy: [ItemSortBy.DatePlayed],
-      sortOrder: [SortOrder.Descending],
-      parentId: this.currentLibrary?.Id,
-      recursive: true,
-      limit: 12
-    })
-    if (result.Items) {
-      return result.Items
-    }
-    return []
+    return this.requireApi().getLatestAudio(this.currentLibrary?.Id)
   }
 
   /**
-   * 查询最近的专辑
-   * @param id
+   * 查询最多播放音频
    * @returns
    */
-  public async getMostAudio(id?: string): Promise<Array<BaseItemDto>> {
-    let result = await this.jellyfin.getItemsApi().getItems({
-      userId: this.activeInfo!.userInfo.userId,
-      includeItemTypes: [BaseItemKind.Audio],
-      sortBy: [ItemSortBy.PlayCount],
-      sortOrder: [SortOrder.Descending],
-      parentId: this.currentLibrary?.Id,
-      recursive: true,
-      limit: 12
-    })
-    if (result.Items) {
-      return result.Items
-    }
-    return []
-  }
-
-  private async getMusicLibrary(): Promise<Array<BaseItemDto>> {
-    let result = await this.jellyfin.getUserViewsApi().getUserViews({
-      userId: this.activeInfo!.userInfo.userId,
-    })
-    if (result.Items) {
-      return result.Items.filter((item) => item.CollectionType === CollectionType.Music)
-    }
-    return []
+  public async getMostAudio(): Promise<Array<BaseItemDto>> {
+    return this.requireApi().getMostAudio(this.currentLibrary?.Id)
   }
 
   /**
@@ -224,313 +124,197 @@ export class Repository extends FinRepository {
    * @returns
    */
   public async getRandomAlbum(): Promise<Array<BaseItemDto>> {
-    // 先查询包含音乐的媒体库
-    let libraryArray = await this.getMusicLibrary()
-    let albumArray = new Array<BaseItemDto>()
-    for (const library of libraryArray) {
-      let result = await this.jellyfin.getItemsApi().getItems({
-        userId: this.activeInfo!.userInfo.userId,
-        parentId: library.Id,
-        sortBy: [ItemSortBy.Random],
-        includeItemTypes:[BaseItemKind.MusicAlbum],
-        recursive: true,
-        limit: 12
-      })
-      if (result.Items) {
-        albumArray.push(...result.Items)
-      }
-    }
-    try {
-      albumArray.sort((a, b) => a.Id!.localeCompare(b.Id!))
-    } catch (e) {
-    }
-    if (albumArray.length > 12) {
-      albumArray.splice(12)
-    }
-    return albumArray
+    return this.requireApi().getRandomAlbum()
   }
 
   /**
-   * 查询
+   * 查询艺术家列表
    * @returns
    */
-  public async loadMedia(): Promise<Array<BaseItemDto>> {
-    let result = await this.jellyfin.getItemsApi().getItems({
-      userId: this.activeInfo!.userInfo.userId
-    })
-    let items = this.filterItem(result.Items)
-    if (items) {
-      return items
-    }
-    return []
-  }
-
   public async getArtists(): Promise<Array<BaseItemDto>> {
-    let result = await this.jellyfin.getArtistsApi().getArtists({
-      userId: this.activeInfo!.userInfo.userId,
-      sortBy: [ItemSortBy.SortName],
-      sortOrder: [SortOrder.Ascending],
-      parentId: this.currentLibrary?.Id
-    })
-    if (result.Items) {
-      return result.Items
-    }
-    return []
+    return this.requireApi().getArtists(this.currentLibrary?.Id)
   }
 
+  /**
+   * 查询艺术家详情
+   * @param id
+   * @returns
+   */
   public async getArtistDetail(id: string): Promise<BaseItemDto> {
-    return this.jellyfin.getUserLibraryApi().getItem({
-      userId: this.activeInfo!.userInfo.userId,
-      itemId: id
-    })
+    return this.requireApi().getArtistDetail(id)
   }
 
+  /**
+   * 查询艺术家专辑
+   * @param id
+   * @returns
+   */
   public async getArtistAlbums(id: string): Promise<Array<BaseItemDto>> {
-    let result = await this.jellyfin.getItemsApi().getItems({
-      userId: this.activeInfo!.userInfo.userId,
-      artistIds:[id],
-      includeItemTypes: [BaseItemKind.MusicAlbum],
-      recursive: true,
-      sortBy: [ItemSortBy.SortName],
-      sortOrder: [SortOrder.Ascending]
-    })
-    if (result?.Items) {
-      return result.Items
-    }
-    return []
+    return this.requireApi().getArtistAlbums(id)
   }
 
+  /**
+   * 查询流派列表
+   * @returns
+   */
   public async getGenres(): Promise<Array<BaseItemDto>> {
-    let result = await this.jellyfin.getGenresApi().getGenres({
-      userId: this.activeInfo!.userInfo.userId,
-      sortBy: [ItemSortBy.SortName],
-      sortOrder: [SortOrder.Ascending],
-      parentId: this.currentLibrary?.Id,
-      recursive: true
-    })
-    if (result.Items) {
-      return result.Items
-    }
-    return []
+    return this.requireApi().getGenres(this.currentLibrary?.Id)
   }
 
+  /**
+   * 查询流派详情
+   * @param id
+   * @returns
+   */
   public async getGenreDetail(id: string): Promise<BaseItemDto> {
-    return this.jellyfin.getUserLibraryApi().getItem({
-      userId: this.activeInfo!.userInfo.userId,
-      itemId: id
-    })
+    return this.requireApi().getGenreDetail(id)
   }
 
+  /**
+   * 查询流派专辑
+   * @param id
+   * @returns
+   */
   public async getGenreAlbums(id: string): Promise<Array<BaseItemDto>> {
-    let result = await this.jellyfin.getItemsApi().getItems({
-      userId: this.activeInfo!.userInfo.userId,
-      genreIds:[id],
-      includeItemTypes: [BaseItemKind.MusicAlbum],
-      recursive: true,
-      sortBy: [ItemSortBy.SortName],
-      sortOrder: [SortOrder.Ascending]
-    })
-    if (result?.Items) {
-      return result.Items
-    }
-    return []
+    return this.requireApi().getGenreAlbums(id)
   }
 
+  /**
+   * 查询曲目列表
+   * @returns
+   */
   public async getTracks(): Promise<Array<BaseItemDto>> {
-    let result = await this.jellyfin.getItemsApi().getItems({
-      userId: this.activeInfo!.userInfo.userId,
-      includeItemTypes: [BaseItemKind.Audio],
-      sortBy: [ItemSortBy.SortName],
-      sortOrder: [SortOrder.Ascending],
-      parentId: this.currentLibrary?.Id,
-      recursive: true
-    })
-    if (result.Items) {
-      return result.Items
-    }
-    return []
+    return this.requireApi().getTracks(this.currentLibrary?.Id)
   }
 
+  /**
+   * 查询收藏列表
+   * @param includeItemTypes
+   * @returns
+   */
   public async loadFavourite(includeItemTypes?: Array<BaseItemKind>): Promise<Array<BaseItemDto>> {
-    let result = await this.jellyfin.getItemsApi().getItems({
-      userId: this.activeInfo!.userInfo.userId,
-      filters: [ItemFilter.IsFavorite],
-      includeItemTypes: includeItemTypes,
-      recursive: true
-    })
-    if (result.Items) {
-      return result.Items
-    }
-    return []
+    return this.requireApi().loadFavourite(includeItemTypes)
   }
 
-  public async loadMediaList(id: string, types: Array<BaseItemKind>
-    , recursive: boolean, sortBy?: Array<ItemSortBy>, sortOrder?: Array<SortOrder>): Promise<Array<BaseItemDto>> {
-    let result = await this.jellyfin.getItemsApi().getItems({
-      parentId: id,
-      includeItemTypes: types,
-      recursive: recursive,
-      sortBy: sortBy,
-      sortOrder: sortOrder
-    })
-    return result.Items!
+  /**
+   * 查询媒体列表
+   * @param id
+   * @param types
+   * @param recursive
+   * @returns
+   */
+  public async loadMediaList(id: string, types: Array<BaseItemKind>, recursive: boolean): Promise<Array<BaseItemDto>> {
+    return this.requireApi().loadMediaList(id, types, recursive)
   }
 
-  public loadMovie(id: string): Promise<BaseItemDto> {
-    return this.jellyfin.getUserLibraryApi().getItem({
-      userId: this.activeInfo!.userInfo.userId,
-      itemId: id
-    })
-  }
-
-  public loadShow(showId: string): Promise<BaseItemDto> {
-    return this.jellyfin.getUserLibraryApi().getItem({
-      userId: this.activeInfo!.userInfo.userId,
-      itemId: showId
-    })
-  }
-
-  public getResumeItems(): Promise<Array<BaseItemDto>> {
-    return this.jellyfin.getItemsApi().getResumeItems({
-      userId: this.activeInfo!.userInfo.userId,
-      limit: 8,
-      includeItemTypes: [BaseItemKind.Movie, BaseItemKind.Episode]
-    }).then((result) => {
-      if (result.Items) {
-        return result.Items
-      }
-      return []
-    })
-  }
-
-  public getNextUp(seriesId?: string): Promise<Array<BaseItemDto>> {
-    return this.jellyfin.getTvShowsApi().getNextUp({
-      userId: this.activeInfo!.userInfo.userId,
-      seriesId: seriesId,
-      enableResumable: false,
-      limit: 8
-    })
-      .then((result) => {
-        if (result.Items) {
-          return result.Items
-        }
-        return []
-      })
-  }
-
-  public getSeasons(seriesId: string): Promise<Array<BaseItemDto>> {
-    return this.jellyfin.getTvShowsApi().getSeasons({
-      userId: this.activeInfo!.userInfo.userId,
-      seriesId: seriesId
-    }).then((result) => {
-      if (result.Items) {
-        return result.Items
-      }
-      return []
-      })
-}
-
-  public getEpisodes(seriesId: string, seasonId: string): Promise<Array<BaseItemDto>> {
-    return this.jellyfin.getTvShowsApi().getEpisodes({
-      userId: this.activeInfo!.userInfo.userId,
-      seriesId: seriesId,
-      seasonId: seasonId,
-      fields: [ItemFields.Overview]
-    }).then((result) => {
-      if (result.Items) {
-        return result.Items
-      }
-      return []
-    })
-  }
-
-  public getEpisode(episodeId: string): Promise<BaseItemDto> {
-    return this.jellyfin.getUserLibraryApi().getItem({
-      userId: this.activeInfo!.userInfo.userId,
-      itemId: episodeId
-    })
-  }
-
+  /**
+   * 获取媒体数据源
+   * @param id
+   * @returns
+   */
   public loadMediaSource(id: string): Promise<PlaybackInfoResponse> {
-    return this.jellyfin.getMediaInfoApi().getPlaybackInfo({
-      userId: this.activeInfo!.userInfo.userId,
-      itemId: id
-    })
+    return this.requireApi().loadMediaSource(id)
   }
 
+  /**
+   * 获取音频流地址
+   * @param id
+   * @param sourceId
+   * @returns
+   */
   public loadStreamUrl(id: string, sourceId: string): Promise<string> {
-    return this.jellyfin.getAudioApi().getAudioStream({
-      itemId: id,
-      static: true,
-      mediaSourceId: sourceId
-    })
+    return this.requireApi().loadStreamUrl(id, sourceId)
   }
 
+  /**
+   * 搜索
+   * @param keyword
+   * @returns
+   */
   public searchMedia(keyword: string): Promise<Array<BaseItemDto>> {
-    return Promise.resolve([])
+    return this.requireApi().searchMedia(keyword)
   }
 
+  /**
+   * 获取媒体详情
+   * @param id
+   * @returns
+   */
+  public getItem(id: string): Promise<BaseItemDto> {
+    return this.requireApi().getItem(id)
+  }
+
+  /**
+   * 获取用户数据
+   * @param id
+   * @returns
+   */
   public getUserItem(id: string): Promise<UserItemDataDto> {
-    return this.jellyfin.getItemsApi().getItemUserData({
-      itemId: id,
-      userId: this.activeInfo!.userInfo.userId
-    })
+    return this.requireApi().getUserItem(id)
   }
 
-  private playlistId: string | undefined
-
-  private async getPlaylistId(): Promise<string | undefined> {
-    if (this.playlistId) {
-      return this.playlistId
-    }
-    let result = await this.jellyfin.getItemsApi().getItems({
-      userId: this.activeInfo!.userInfo.userId,
-      includeItemTypes: [BaseItemKind.Playlist],
-      sortBy: [ItemSortBy.PlayCount],
-      sortOrder: [SortOrder.Descending],
-      parentId: this.currentLibrary?.Id,
-      recursive: true,
-      limit: 12
-    })
-    let item = result.Items?.find((item) => {
-      return item.Name === this.clientInfo.name
-    })
-    if (!item) {
-      return undefined
-    }
-    return item.Id
+  /**
+   * 播放开始
+   * @param id
+   * @returns
+   */
+  public onPlaybackStart(id: string): Promise<void> {
+    return this.requireApi().onPlaybackStart(id)
   }
 
+  /**
+   * 播放进度
+   * @param id
+   * @param position
+   * @param playing
+   * @returns
+   */
+  public onPlaybackProgress(id: string, position: number, playing: boolean): Promise<void> {
+    return this.requireApi().onPlaybackProgress(id, position, playing)
+  }
+
+  /**
+   * 播放停止
+   * @param id
+   * @param position
+   * @returns
+   */
+  public onPlaybackStopped(id: string, position: number): Promise<void> {
+    return this.requireApi().onPlaybackStopped(id, position)
+  }
+
+  /**
+   * 获取播放列表
+   * @returns
+   */
   public async getPlayList(): Promise<Array<BaseItemDto> | undefined> {
-    let id = await this.getPlaylistId()
+    let id = await this.getPlaylistIdInternal()
     if (!id) {
       return undefined
     }
-    let playlistResult = await this.jellyfin.getPlaylistApi().getPlaylistItems({playlistId: id
-    , userId: this.activeInfo?.userInfo.userId})
-    if (playlistResult?.Items) {
-      return playlistResult.Items
-    }
-    return undefined
+    return this.requireApi().getPlayList(id)
   }
 
+  /**
+   * 设置播放列表
+   * @param playList
+   * @returns
+   */
   public async setPlaylist(playList: Array<BaseItemDto>): Promise<void> {
-    let playlistId = await this.getPlaylistId()
     let ids = new Array<string>()
-    playList.forEach((item) => {
+    playList.forEach((item: BaseItemDto) => {
       ids.push(item.Id!)
     })
-    if (!playlistId) {
-      this.playlistId = (await this.jellyfin.getPlaylistApi().createPlaylist({name: this.clientInfo.name
-      , ids: ids
-      , userId: this.activeInfo?.userInfo?.userId
-      , mediaType: MediaType.Audio})).Id
-    } else {
-      await this.jellyfin.getPlaylistApi().updatePlaylist({playlistId: playlistId
-      , updatePlaylistDto: {
-        Ids: ids
-        }})
+    let clientName = "FinMusic"
+    this.playlistId = await this.requireApi().setPlaylist(this.playlistId, ids, clientName)
+  }
+
+  private async getPlaylistIdInternal(): Promise<string | undefined> {
+    if (this.playlistId) {
+      return this.playlistId
     }
+    this.playlistId = await this.requireApi().getPlaylistId(this.currentLibrary?.Id, "FinMusic")
+    return this.playlistId
   }
 
 }

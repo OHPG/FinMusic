@@ -5,7 +5,6 @@ import { media } from "@kit.MediaKit"
 import { wantAgent } from "@kit.AbilityKit"
 import { backgroundTaskManager } from "@kit.BackgroundTasksKit"
 import { Repository } from "../data/Repository"
-import { UserItemDataDto } from "@ohpg/jellyfin"
 
 /**
  * @Author peerless2012
@@ -163,18 +162,16 @@ export class AudioSession {
   }
 
   private async toggleFavourite(id: string): Promise<void> {
-    let userItemDto: UserItemDataDto
     if (this.favourite) {
-      userItemDto = await this.repository.unmarkFavorite(id)
+      await this.repository.unmarkFavoriteItem(id)
     } else {
-      userItemDto = await this.repository.markFavorite(id)
+      await this.repository.markFavoriteItem(id)
     }
     let target = this.queue.getItemById(id)
     let current = this.queue.getCurrent()
     if (target) {
-      target.extra.UserData = userItemDto
+      this.favourite = !this.favourite
       if (target.id === current?.id) {
-        this.favourite = userItemDto.IsFavorite ? true : false
         if (this.player.getState() !== 'playing') {
           await this.updateState()
         }

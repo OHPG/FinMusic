@@ -279,7 +279,7 @@ export class AudioPlayer {
     }
     // console.log("AbstractController: reportPlaybackStart " + this.itemDto.Id)
     this.reportingPlayback = true
-    this.repository.onPlaybackStart(this.itemDto.Id!)
+    this.repository.onPlaybackStart(this.itemDto!.Id!)
       .then(() => {
         this.reportingPlayback = false
         // console.log("AbstractController: reportPlaybackStart success.")
@@ -297,7 +297,7 @@ export class AudioPlayer {
     this.reportingPlayback = true
     this.lastPosition = this.getPosition() * 10000
     // console.log("AbstractController: reportPlaybackUpdate " + this.itemDto.Id + ", position = " + this.lastPosition)
-    this.repository.onPlaybackUpdate(this.itemDto.Id!, this.lastPosition, this.avState === 'playing')
+    this.repository.onPlaybackProgress(this.itemDto!.Id!, this.lastPosition, this.avState === 'playing')
       .then(() => {
         this.reportingPlayback = false
         // console.log("AbstractController: reportPlaybackUpdate success.")
@@ -314,7 +314,7 @@ export class AudioPlayer {
     }
     this.reportingPlayback = true
     // console.log("AbstractController: reportPlaybackStop " + this.itemDto.Id)
-    this.repository.onPlaybackStop(this.itemDto.Id!, this.lastPosition)
+    this.repository.onPlaybackStopped(this.itemDto!.Id!, this.lastPosition)
       .then(() => {
         this.reportingPlayback = false
         // console.log("AbstractController: reportPlaybackStop success.")

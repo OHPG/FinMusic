@@ -9,8 +9,9 @@
     // https://ohpm.openharmony.cn/#/cn/detail/@abner%2Frefresh
     "@abner/refresh": "1.4.3",
     "fast-blurhash": "1.1.0",
-    "@ohpg/jellyfin": 'file:../../FinSdk/jellyfin',
-    "@ohpg/fin-core": 'file:../../FinCore/lib_core',
-    "@ohpg/fin-framework": 'file:../../FinCore/lib_framework'
+    "@ohpg/network": 'file:../sdk/network',
+    "@ohpg/jellyfin": 'file:../sdk/jellyfin',
+    "@ohpg/fin-core": 'file:../framewrok/lib_core',
+    "@ohpg/fin-framework": 'file:../framewrok/lib_framework'
   }
 }

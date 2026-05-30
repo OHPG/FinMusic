@@ -29,9 +29,9 @@ export class AlbumViewModel extends AppViewModel implements SimpleRepository {
   }
 
   async loadData(type: LoadType): Promise<Object> {
-    let album = await this.repository.loadMovie(this.args.id)
+    let album: BaseItemDto = await this.repository.getItem(this.args.id)
     let audioArray = await this.repository.loadMediaList(album.Id!, [BaseItemKind.Audio], true)
-    audioArray.sort((left: BaseItemDto, right: BaseItemDto) => {
+    audioArray.sort((left: BaseItemDto, right: BaseItemDto): number => {
       return left.IndexNumber! - right.IndexNumber!
     })
     let groupInfo: GroupInfo = {

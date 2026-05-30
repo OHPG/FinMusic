@@ -50,16 +50,20 @@
       ]
     },
     {
-      "name": "core",
-      "srcPath": "../FinCore/lib_core"
-    },
-    {
-      "name": "framework",
-      "srcPath": "../FinCore/lib_framework"
+      "name": "network",
+      "srcPath": "./sdk/network"
     },
     {
       "name": "jellyfin",
-      "srcPath": "../FinSdk/jellyfin"
+      "srcPath": "./sdk/jellyfin"
+    },
+    {
+      "name": "core",
+      "srcPath": "./framewrok/lib_core"
+    },
+    {
+      "name": "framework",
+      "srcPath": "./framewrok/lib_framework"
     }
   ]
 }

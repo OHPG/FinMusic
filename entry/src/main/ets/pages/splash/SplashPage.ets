@@ -61,7 +61,7 @@ struct SplashPage {
     if (activeInfo) {
       router.replaceUrl({url: 'pages/home/HomePage'})
     } else {
-      FinRouter.auth(true)
+      FinRouter.auth(this.getUIContext(), true)
     }
   }
 
