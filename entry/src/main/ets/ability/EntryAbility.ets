@@ -23,17 +23,21 @@ export default class EntryAbility extends UIAbility {
   onWindowStageCreate(windowStage: window.WindowStage): void {
     // Main window is created, set main page for this ability
     hilog.info(0x0000, 'testTag', '%{public}s', 'Ability onWindowStageCreate');
-    let window = windowStage.getMainWindowSync()
-    DeviceUtil.initWindow(window)
-    window.setImmersiveModeEnabledState(true)
-    this.avoidAreaSystem.register(window)
+    let mainWindow = windowStage.getMainWindowSync()
+    DeviceUtil.initWindow(mainWindow)
+    mainWindow.setImmersiveModeEnabledState(true)
+    this.avoidAreaSystem.register(mainWindow)
     windowStage.loadContent('pages/splash/SplashPage', (err) => {
       if (err.code) {
         hilog.error(0x0000, 'testTag', 'Failed to load the content. Cause: %{public}s', JSON.stringify(err) ?? '');
         return;
       }
-      this.breakpointSystem.register(window)
-      AppStorage.setOrCreate(AudioManager.AUDIO_MANAGER, new AudioManager(this.context))
+      this.breakpointSystem.register(mainWindow)
+      let audioManager = new AudioManager(this.context)
+      AppStorage.setOrCreate(AudioManager.AUDIO_MANAGER, audioManager)
+      // 初始化播放管理器（UIContext 此时可用）
+      let uiContext = mainWindow.getUIContext()
+      audioManager.initPlaybackManager(uiContext)
       hilog.info(0x0000, 'testTag', 'Succeeded in loading the content.');
     });
   }
@@ -43,6 +47,8 @@ export default class EntryAbility extends UIAbility {
     this.breakpointSystem.unregister()
     // Main window is destroyed, release UI related resources
     hilog.info(0x0000, 'testTag', '%{public}s', 'Ability onWindowStageDestroy');
+    let audioManager = AppStorage.get<AudioManager>(AudioManager.AUDIO_MANAGER)
+    audioManager?.release()
   }
 
   onForeground(): void {

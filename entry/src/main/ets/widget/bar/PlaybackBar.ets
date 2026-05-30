@@ -1,0 +1,147 @@
+import { avSession } from "@kit.AVSessionKit"
+import { BreakpointSystem } from "@ohpg/fin-core"
+import { CommonConstants } from "../../common/CommonConstants"
+import { AVPlayerContext, MediaControl } from "@ohpg/player"
+import { PlayerRouter } from "@ohpg/widget"
+
+@Component
+export struct PlaybackBar {
+
+  @StorageProp("playerVisible") playerVisible: boolean = false
+
+  @StorageProp(BreakpointSystem.CURRENT_WIDTH_BREAKPOINT) currentBreakpoint: WidthBreakpoint = WidthBreakpoint.WIDTH_SM
+
+  @StorageProp(AVPlayerContext.AV_PLAYER_CONTEXT) @Watch('onPlayerContextChange') playerContextRef?: object = undefined
+
+  @State mediaMetadata?: avSession.AVMetadata = undefined
+
+  @State mediaState?: avSession.PlaybackState = avSession.PlaybackState.PLAYBACK_STATE_INITIAL
+
+  @State playRes: Resource = $r('sys.symbol.play_fill')
+
+  private control?: MediaControl
+
+  private metadataCallback: Callback<avSession.AVMetadata> = (metadata: avSession.AVMetadata) => {
+    this.updateMetadata(metadata)
+  }
+
+  private stateCallback: Callback<avSession.AVPlaybackState> = (state: avSession.AVPlaybackState) => {
+    this.updatePlaybackState(state)
+  }
+
+  aboutToAppear(): void {
+    let playerContext = AppStorage.get<AVPlayerContext>(AVPlayerContext.AV_PLAYER_CONTEXT)
+    this.bindControl(playerContext)
+  }
+
+  private onPlayerContextChange(): void {
+    let playerContext = AppStorage.get<AVPlayerContext>(AVPlayerContext.AV_PLAYER_CONTEXT)
+    this.bindControl(playerContext)
+  }
+
+  private bindControl(playerContext?: AVPlayerContext): void {
+    if (this.control) {
+      this.control.offMetadataChange(this.metadataCallback)
+      this.control.offPlaybackStateChange(this.stateCallback)
+      this.control = undefined
+    }
+    if (!playerContext) {
+      this.mediaMetadata = undefined
+      this.mediaState = avSession.PlaybackState.PLAYBACK_STATE_INITIAL
+      return
+    }
+    this.control = playerContext.control
+    let metadata = this.control.getMetadata()
+    if (metadata) {
+      this.updateMetadata(metadata)
+    }
+    let playbackState = this.control.getPlaybackState()
+    if (playbackState) {
+      this.updatePlaybackState(playbackState)
+    }
+    this.control.onMetadataChange(this.metadataCallback)
+    this.control.onPlaybackStateChange(this.stateCallback)
+  }
+
+  build() {
+    Row({ space: CommonConstants.SPACE_8 }) {
+      Image(this.mediaMetadata?.mediaImage)
+        .alt($r('app.media.alt'))
+        .objectFit(ImageFit.Cover)
+        .autoResize(true)
+        .height(56)
+        .width(56)
+
+      Column({ space: CommonConstants.SPACE_8 }) {
+        Text(this.mediaMetadata?.title)
+          .fontSize($r('app.float.md_font_size'))
+          .fontColor($r('sys.color.ohos_id_color_text_primary'))
+          .width('100%')
+          .maxLines(1)
+
+        Text(this.mediaMetadata?.artist)
+          .fontSize($r('app.float.sm_font_size'))
+          .fontColor($r('sys.color.ohos_id_color_text_secondary'))
+          .width('100%')
+          .maxLines(1)
+      }
+      .width('auto')
+      .layoutWeight(1)
+
+      Row() {
+        Stack() {
+          SymbolGlyph(this.playRes)
+            .fontSize(32)
+            .fontColor([$r('sys.color.ohos_id_color_text_primary')])
+        }
+        .width(48)
+        .height(48)
+        .onClick(() => {
+          if (this.mediaState === avSession.PlaybackState.PLAYBACK_STATE_PLAY) {
+            this.control?.pause()
+          } else {
+            this.control?.play()
+          }
+        })
+
+        Stack() {
+          SymbolGlyph($r('sys.symbol.forward_end_fill'))
+            .fontSize(32)
+            .fontColor([$r('sys.color.ohos_id_color_text_primary')])
+        }
+        .width(48)
+        .height(48)
+        .onClick(() => {
+          this.control?.next()
+        })
+      }
+      .margin({ right: CommonConstants.SPACE_8 })
+    }
+    .clip(true)
+    .borderRadius($r('app.float.sm_border_radius'))
+    .backgroundBlurStyle(BlurStyle.Thin)
+    .backgroundColor($r('sys.color.comp_background_secondary'))
+    .shadow(ShadowStyle.OUTER_DEFAULT_MD)
+    .visibility((this.mediaMetadata && !this.playerVisible) ? Visibility.Visible : Visibility.Hidden)
+    .width(this.currentBreakpoint >= WidthBreakpoint.WIDTH_MD ? 480 : '100%')
+    .height(56)
+    .onClick(() => {
+      PlayerRouter.push(this.getUIContext())
+    })
+  }
+
+  private updateMetadata(metadata: avSession.AVMetadata) {
+    this.mediaMetadata = metadata
+  }
+
+  private updatePlaybackState(state: avSession.AVPlaybackState) {
+    this.mediaState = state.state
+    this.playRes = state.state === avSession.PlaybackState.PLAYBACK_STATE_PLAY
+      ? $r('sys.symbol.pause_fill')
+      : $r('sys.symbol.play_fill')
+  }
+
+  aboutToDisappear(): void {
+    this.bindControl(undefined)
+  }
+}

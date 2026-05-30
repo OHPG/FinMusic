@@ -9,6 +9,7 @@ import { Repository } from '../../../data/Repository'
 import { GroupInfo } from '../../../entity/GroupInfo'
 import { AudioManager } from '../../../player/AudioManager'
 import { BreakpointSystem } from '@ohpg/fin-core'
+import { PlayerRouter } from '@ohpg/widget'
 
 @Entry
 @Component
@@ -68,10 +69,8 @@ struct AlbumPage {
                   .height(60)
               }
               .onClick(() => {
-                let queueManager = this.audioManager.getAudioQueue()
-                queueManager.resetItem(this.viewModel.audios())
-                this.audioManager.getAudioControl().playItem(item.Id!)
-                router.pushUrl({url: 'pages/player/PlayerPage'})
+                this.audioManager.playAll(group!.items!, item.Id!)
+                PlayerRouter.push(this.getUIContext())
               })
             })
           }
@@ -103,7 +102,7 @@ struct AlbumPage {
 
       ScrollRefreshView({
         source: this.viewModel,
-        itemLayout: (info: ESObject) => {
+        itemLayout: (info: GroupInfo) => {
           this.movieScrollView(info)
         }
       })

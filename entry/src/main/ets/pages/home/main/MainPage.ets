@@ -7,8 +7,8 @@ import { MainGroup } from "./MainGroup"
 import { MainViewModel } from "./MainViewModel"
 import { router, window } from "@kit.ArkUI"
 import { BreakpointSystem } from "@ohpg/fin-core"
-import { AudioItem } from "../../../player/AudioItem"
 import { AudioManager } from "../../../player/AudioManager"
+import { PlayerRouter } from "@ohpg/widget"
 
 @Component
 export struct MainPage {
@@ -59,7 +59,7 @@ export struct MainPage {
 
 }
 
-async function onMainItemClick(group: MainGroup, item: BaseItemDto) {
+async function onMainItemClick(context: UIContext, group: MainGroup, item: BaseItemDto) {
   if (item.Type === BaseItemKind.MusicAlbum) {
     let args: MediaArgs = {
       id: item.Id!,
@@ -68,21 +68,10 @@ async function onMainItemClick(group: MainGroup, item: BaseItemDto) {
     router.pushUrl({url: 'pages/detail/album/AlbumPage', params: args})
   } else if (item.Type === BaseItemKind.Audio) {
     let audioManager: AudioManager = AppStorage.get(AudioManager.AUDIO_MANAGER)!
-    let repository: Repository = AppStorage.get(Repository.REPOSITORY)!
-    let queueManager = audioManager.getAudioQueue()
-    let audioItems = new Array<AudioItem>
-    for (let item of group.items) {
-      audioItems.push({
-        id: item.Id!,
-        name: item.Name!,
-        art: repository.buildImage(item, ImageType.Primary)!,
-        url: await repository.loadStreamUrl(item.Id!, item.Id!),
-        extra: item
-      })
-    }
-    queueManager.resetItem(audioItems)
-    audioManager.getAudioControl().playItem(item.Id!)
-    router.pushUrl({url: 'pages/player/PlayerPage'})
+    console.info("FinMusic: onMainItemClick Audio id=" + item.Id)
+    let result = audioManager.playAll(group.items, item.Id!)
+    console.info("FinMusic: onMainItemClick playAll result=" + result + ", pushing PlayerRouter")
+    PlayerRouter.push(context)
   }
 }
 
@@ -133,8 +122,8 @@ struct MainGroupList{
 
   @Require group?: MainGroup
 
-  private callback: Callback<BaseItemDto> = (item) => {
-    onMainItemClick(this.group!, item)
+  private callback: Callback<BaseItemDto> = (item: BaseItemDto) => {
+    onMainItemClick(this.getUIContext(), this.group!, item)
   }
 
   build() {
@@ -162,8 +151,8 @@ struct MainGroupGrid{
 
   @Require group?: MainGroup
 
-  private callback: Callback<BaseItemDto> = (item) => {
-    onMainItemClick(this.group!, item)
+  private callback: Callback<BaseItemDto> = (item: BaseItemDto) => {
+    onMainItemClick(this.getUIContext(), this.group!, item)
   }
 
   build() {
@@ -196,8 +185,8 @@ struct MainMediaListItem {
 
   @Require callback?: Callback<BaseItemDto>
 
-  aboutToReuse(params: Record<string, ESObject>): void {
-    this.item = params["item"]
+  aboutToReuse(params: Record<string, Object>): void {
+    this.item = params["item"] as BaseItemDto
   }
 
   build() {
@@ -242,8 +231,8 @@ struct MainMediaGridItem {
 
   @Require callback?: Callback<BaseItemDto>
 
-  aboutToReuse(params: Record<string, ESObject>): void {
-    this.item = params["item"]
+  aboutToReuse(params: Record<string, Object>): void {
+    this.item = params["item"] as BaseItemDto
   }
 
   build() {

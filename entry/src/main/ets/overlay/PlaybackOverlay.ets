@@ -2,8 +2,10 @@ import { avSession } from "@kit.AVSessionKit"
 import { BreakpointSystem } from "@ohpg/fin-core"
 import { AudioManager } from "../player/AudioManager"
 import { CommonConstants } from "../common/CommonConstants"
-import { ComponentContent, OverlayManager, router, window } from "@kit.ArkUI"
+import { ComponentContent, OverlayManager, window } from "@kit.ArkUI"
 import { AbilityConstant, EnvironmentCallback, Configuration } from "@kit.AbilityKit"
+import { AVPlayerContext, MediaControl } from "@ohpg/player"
+import { PlayerRouter } from "@ohpg/widget"
 
 export class PlaybackOverlay {
 
@@ -29,7 +31,6 @@ export class PlaybackOverlay {
 
   constructor(context: UIContext) {
     this.context = context
-    // 注：目前属性变化传递不到封装好的列表组件，暂时写死。
     AppStorage.setOrCreate("playerHeight", 60)
   }
 
@@ -38,6 +39,7 @@ export class PlaybackOverlay {
     this.overlayManager = this.context.getOverlayManager()
     this.overlayManager.addComponentContent(this.overlayNode)
     this.environmentCallbackId = this.context.getHostContext()?.getApplicationContext().on('environment', this.environmentCallback);
+    console.info("FinMusic: PlaybackOverlay.attach, start resumeAudioQueue")
     this.audioManager.resumeAudioQueue()
   }
 
@@ -77,27 +79,56 @@ struct PlaybackOverlayComp {
 
   @StorageProp("currentAvoidArea") avoidArea?: window.AvoidArea = undefined
 
+  @StorageProp(AVPlayerContext.AV_PLAYER_CONTEXT) @Watch('onPlayerContextChange') playerContextRef?: object = undefined
+
   @State playRes: Resource = $r('sys.symbol.play_fill')
 
-  private metadataCallback: ((data: avSession.AVMetadata) => void) = (metadata) => {
+  private control?: MediaControl
+
+  private metadataCallback: Callback<avSession.AVMetadata> = (metadata: avSession.AVMetadata) => {
     this.updateMetadata(metadata)
   }
 
-  private stateCallback: ((data: avSession.AVPlaybackState) => void) = (state) => {
+  private stateCallback: Callback<avSession.AVPlaybackState> = (state: avSession.AVPlaybackState) => {
     this.updatePlaybackState(state)
   }
 
   aboutToAppear(): void {
-    let metadata = this.audioManager.getAudioControl().getMetadata()
+    let playerContext = AppStorage.get<AVPlayerContext>(AVPlayerContext.AV_PLAYER_CONTEXT)
+    console.info("FinMusic: PlaybackOverlayComp.aboutToAppear, playerContext=" + (playerContext !== undefined))
+    this.bindControl(playerContext)
+  }
+
+  private onPlayerContextChange(): void {
+    let playerContext = AppStorage.get<AVPlayerContext>(AVPlayerContext.AV_PLAYER_CONTEXT)
+    console.info("FinMusic: PlaybackOverlayComp.onPlayerContextChange, playerContext=" + (playerContext !== undefined))
+    this.bindControl(playerContext)
+  }
+
+  private bindControl(playerContext?: AVPlayerContext): void {
+    // 先解绑旧的
+    if (this.control) {
+      this.control.offMetadataChange(this.metadataCallback)
+      this.control.offPlaybackStateChange(this.stateCallback)
+      this.control = undefined
+    }
+    if (!playerContext) {
+      this.mediaMetadata = undefined
+      this.mediaState = avSession.PlaybackState.PLAYBACK_STATE_INITIAL
+      return
+    }
+    this.control = playerContext.control
+    let metadata = this.control.getMetadata()
     if (metadata) {
+      console.info("FinMusic: PlaybackOverlayComp bindControl metadata: " + metadata.title)
       this.updateMetadata(metadata)
     }
-    let playbackState = this.audioManager.getAudioControl().getPlaybackState()
+    let playbackState = this.control.getPlaybackState()
     if (playbackState) {
       this.updatePlaybackState(playbackState)
     }
-    this.audioManager.getAudioControl().onMetadataChange(this.metadataCallback)
-    this.audioManager.getAudioControl().onPlaybackStateChange(this.stateCallback)
+    this.control.onMetadataChange(this.metadataCallback)
+    this.control.onPlaybackStateChange(this.stateCallback)
   }
 
   build() {
@@ -136,9 +167,9 @@ struct PlaybackOverlayComp {
           .height(48)
           .onClick(() => {
             if (this.mediaState === avSession.PlaybackState.PLAYBACK_STATE_PLAY) {
-              this.audioManager.getAudioControl().pause()
+              this.control?.pause()
             } else {
-              this.audioManager.getAudioControl().play()
+              this.control?.play()
             }
           })
 
@@ -150,7 +181,7 @@ struct PlaybackOverlayComp {
           .width(48)
           .height(48)
           .onClick(() => {
-            this.audioManager.getAudioControl().next()
+            this.control?.next()
           })
         }
         .margin({right: CommonConstants.SPACE_8})
@@ -167,7 +198,7 @@ struct PlaybackOverlayComp {
       .width(this.currentBreakpoint >= WidthBreakpoint.WIDTH_MD ? 480 : 'auto')
       .height(56)
       .onClick(() => {
-          router.pushUrl({url: "pages/player/PlayerPage"})
+        PlayerRouter.push(this.getUIContext())
       })
     }
     .hitTestBehavior(HitTestMode.Transparent)
@@ -176,8 +207,8 @@ struct PlaybackOverlayComp {
   }
 
   private updateMetadata(metadata: avSession.AVMetadata) {
+    console.info("FinMusic: PlaybackOverlayComp.updateMetadata title=" + metadata.title)
     this.mediaMetadata = metadata
-    // AppStorage.setOrCreate("playerHeight", 56)
   }
 
   private updatePlaybackState(state: avSession.AVPlaybackState) {
@@ -188,7 +219,6 @@ struct PlaybackOverlayComp {
   }
 
   aboutToDisappear(): void {
-    this.audioManager.getAudioControl().offMetadataChange(this.metadataCallback)
-    this.audioManager.getAudioControl().offPlaybackStateChange(this.stateCallback)
+    this.bindControl(undefined)
   }
 }

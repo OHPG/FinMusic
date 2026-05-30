@@ -1,106 +1,112 @@
-import { BaseItemDto, ImageType } from '@ohpg/jellyfin'
+import { BaseItemDto } from '@ohpg/jellyfin'
+import { AVPlaybackManager, AVPlayerKit } from '@ohpg/player'
 import { Repository } from '../data/Repository'
-import { AudioControl } from './AudioControl'
-import { AudioItem } from './AudioItem'
-import { AudioPlayer } from './AudioPlayer'
-import { AudioQueue } from './AudioQueue'
-import { AudioSession } from './AudioSession'
+import { AppPlaybackManager } from './AppPlaybackManager'
+import { AppMediaResolver } from './AppMediaResolver'
+import { PlayArgs } from './AppPlayerContext'
+
 /**
- * @Author peerless2012
- * @Email peerless2012@126.com
- * @DateTime 2024/12/7 17:15
- * @Version V1.0
- * @Description
+ * FinMusic 音频管理器。
+ * 持有 AppPlaybackManager，提供播放入口和播放列表持久化。
  */
 export class AudioManager {
 
   public static readonly AUDIO_MANAGER = 'audioManager'
 
-  private readonly audioQueue: AudioQueue
-
-  private readonly audioControl: AudioControl
-
-  private readonly audioSession: AudioSession
-
-  private readonly audioPlayer: AudioPlayer
-
   public readonly repository: Repository
 
-  private ignoreQueueChanged = false
+  private playbackManager?: AppPlaybackManager
 
   constructor(context: Context) {
-    this.audioPlayer = new AudioPlayer(context)
-    this.audioQueue = new AudioQueue(context)
-    this.audioQueue.on('queueChanged', () => {
-      if (!this.ignoreQueueChanged) {
-        this.saveAudioQueue()
-      }
-    })
-    this.audioSession = new AudioSession(context, this.audioQueue, this.audioPlayer)
-    this.audioControl = new AudioControl(context, this.audioQueue, this.audioSession)
     this.repository = AppStorage.get(Repository.REPOSITORY)!
+    // 注册媒体解析器（将 assetId 解析为流 URL）
+    AVPlayerKit.setMediaResolver(new AppMediaResolver(this.repository))
   }
 
-  public getAudioQueue(): AudioQueue {
-    return this.audioQueue
+  /**
+   * 初始化播放管理器（需要 UIContext，由首个页面调用）
+   */
+  public initPlaybackManager(uiContext: UIContext): AppPlaybackManager {
+    if (!this.playbackManager) {
+      this.playbackManager = new AppPlaybackManager(uiContext)
+      AppStorage.setOrCreate(AVPlaybackManager.AV_PLAYER_MANAGER, this.playbackManager)
+    }
+    return this.playbackManager
   }
 
-  public getAudioSession(): AudioSession {
-    return this.audioSession
+  public getPlaybackManager(): AppPlaybackManager | undefined {
+    return this.playbackManager
   }
 
-  public getAudioControl(): AudioControl {
-    return this.audioControl
+  /**
+   * 播放全部
+   * @param items 播放列表
+   * @param startId 起始播放项 ID
+   * @returns true=播放成功，false=播放器未初始化
+   */
+  public playAll(items: Array<BaseItemDto>, startId: string): boolean {
+    console.info("FinMusic: playAll startId=" + startId + ", items=" + items.length)
+    if (!this.playbackManager) {
+      console.warn("FinMusic: playAll failed - playbackManager not initialized")
+      return false
+    }
+    let args: PlayArgs = { items: items, startId: startId }
+    let result = this.playbackManager.playAll(args)
+    console.info("FinMusic: playAll result=" + result)
+    if (result) {
+      this.saveAudioQueue(items)
+    }
+    return result
   }
 
+  /**
+   * 恢复上次播放列表（App 启动时调用）。
+   * 只加载队列和 prepare，不自动播放，等待用户手动触发。
+   */
   public async resumeAudioQueue(): Promise<void> {
     let items = await this.repository.getPlayList()
-    if (!items || items.length <= 0) {
+    console.info("FinMusic: resumeAudioQueue items=" + (items ? items.length : 0))
+    if (!items || items.length <= 0) return
+    if (!this.playbackManager) {
+      console.warn("FinMusic: resumeAudioQueue - playbackManager not initialized")
       return
     }
-    let audioItems = new Array<AudioItem>()
-    let lastAudioItem: BaseItemDto | undefined = undefined
+
+    // 找到最近播放的项
+    let lastItem: BaseItemDto | undefined = undefined
     for (let item of items) {
-      audioItems.push({
-        id: item.Id!,
-        name: item.Name!,
-        art: this.repository.buildImage(item, ImageType.Primary)!,
-        url: await this.repository.loadStreamUrl(item.Id!, item.Id!),
-        extra: item
-      })
-      if (lastAudioItem) {
+      if (lastItem) {
         if (item.UserData?.LastPlayedDate
-          && lastAudioItem.UserData?.LastPlayedDate
-          && item.UserData.LastPlayedDate > lastAudioItem.UserData.LastPlayedDate) {
-          lastAudioItem = item
+          && lastItem.UserData?.LastPlayedDate
+          && item.UserData.LastPlayedDate > lastItem.UserData.LastPlayedDate) {
+          lastItem = item
         }
       } else {
-        lastAudioItem = item
+        lastItem = item
       }
     }
-    if (lastAudioItem) {
-      this.ignoreQueueChanged = true
-      this.audioQueue.resetItem(audioItems)
-      this.ignoreQueueChanged = false
-      await this.audioControl.prepareItem(lastAudioItem.Id!)
+
+    if (lastItem) {
+      console.info("FinMusic: resumeAudioQueue loadAll startId=" + lastItem.Id)
+      let args: PlayArgs = { items: items, startId: lastItem.Id! }
+      this.playbackManager.loadAll(args)
+    } else {
+      console.info("FinMusic: resumeAudioQueue - no lastItem found")
     }
   }
 
-  private saveAudioQueue() {
-    let queue = this.audioQueue.getQueue()
-    if (!queue || queue.length <= 0) {
-      return
-    }
-    let itemArray = new Array<BaseItemDto>()
-    for (const item of queue) {
-      itemArray.push(item.extra)
-    }
-    this.repository.setPlaylist(itemArray)
+  /**
+   * 保存播放列表到服务端
+   */
+  private saveAudioQueue(items: Array<BaseItemDto>): void {
+    if (!items || items.length <= 0) return
+    this.repository.setPlaylist(items)
   }
 
-  public release() {
-    this.audioSession.release()
-    this.audioQueue.release()
+  /**
+   * 释放资源
+   */
+  public async release(): Promise<void> {
+    await this.playbackManager?.release()
   }
-
 }
