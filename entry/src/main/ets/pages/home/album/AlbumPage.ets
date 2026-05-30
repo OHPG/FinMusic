@@ -61,7 +61,7 @@ struct MediaItem {
   build() {
     Column() {
       Image(this.repository?.buildImage(this.item!, ImageType.Primary))
-        .alt($r('app.media.alt'))
+        .alt($r('app.media.default_cover'))
         .objectFit(ImageFit.Cover)
         .autoResize(true)
         .borderRadius($r('app.float.lg_border_radius'))

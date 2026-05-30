@@ -309,6 +309,15 @@ export class Repository extends FinRepository {
     this.playlistId = await this.requireApi().setPlaylist(this.playlistId, ids, clientName)
   }
 
+  /**
+   * 获取歌词
+   * @param id 音频 item id
+   * @returns LyricDto JSON 或 undefined
+   */
+  public getLyrics(id: string): Promise<object | undefined> {
+    return this.requireApi().getLyrics(id)
+  }
+
   private async getPlaylistIdInternal(): Promise<string | undefined> {
     if (this.playlistId) {
       return this.playlistId

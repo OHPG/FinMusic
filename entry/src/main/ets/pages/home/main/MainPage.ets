@@ -193,7 +193,7 @@ struct MainMediaListItem {
 
     Column({space: 4}) {
       Image(this.repository?.buildImage(this.item!, ImageType.Primary))
-        .alt($r('app.media.alt'))
+        .alt($r('app.media.default_cover'))
         .objectFit(ImageFit.Cover)
         .autoResize(true)
         .width(160)
@@ -239,7 +239,7 @@ struct MainMediaGridItem {
 
     Row({space: 12}) {
       Image(this.repository?.buildImage(this.item!, ImageType.Primary))
-        .alt($r('app.media.alt'))
+        .alt($r('app.media.default_cover'))
         .objectFit(ImageFit.Cover)
         .autoResize(true)
         .width(60)

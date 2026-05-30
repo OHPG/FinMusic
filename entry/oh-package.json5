@@ -13,9 +13,9 @@
     "@ohpg/jellyfin": 'file:../sdk/jellyfin',
     "@ohpg/fin-core": 'file:../framewrok/lib_core',
     "@ohpg/fin-framework": 'file:../framewrok/lib_framework',
-    "@ohpg/core": "0.8.3",
-    "@ohpg/player": "0.8.3",
-    "@ohpg/widget": "0.8.3",
-    "@ohpg/system": "0.8.3"
+    "@ohpg/core": "0.8.4",
+    "@ohpg/player": "0.8.4",
+    "@ohpg/widget": "0.8.4",
+    "@ohpg/system": "0.8.4"
   }
 }

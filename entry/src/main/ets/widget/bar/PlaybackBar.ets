@@ -66,20 +66,20 @@ export struct PlaybackBar {
   build() {
     Row({ space: CommonConstants.SPACE_8 }) {
       Image(this.mediaMetadata?.mediaImage)
-        .alt($r('app.media.alt'))
+        .alt($r('app.media.default_cover'))
         .objectFit(ImageFit.Cover)
         .autoResize(true)
         .height(56)
         .width(56)
 
-      Column({ space: CommonConstants.SPACE_8 }) {
+      Column({ space: CommonConstants.SPACE_4 }) {
         Text(this.mediaMetadata?.title)
           .fontSize($r('app.float.md_font_size'))
           .fontColor($r('sys.color.ohos_id_color_text_primary'))
           .width('100%')
           .maxLines(1)
 
-        Text(this.mediaMetadata?.artist)
+        Text(this.buildSubtitle())
           .fontSize($r('app.float.sm_font_size'))
           .fontColor($r('sys.color.ohos_id_color_text_secondary'))
           .width('100%')
@@ -128,6 +128,15 @@ export struct PlaybackBar {
     .onClick(() => {
       PlayerRouter.push(this.getUIContext())
     })
+  }
+
+  private buildSubtitle(): string | undefined {
+    let artist = this.mediaMetadata?.artist
+    let album = this.mediaMetadata?.album
+    if (artist && album) {
+      return `${artist} - ${album}`
+    }
+    return artist || album || undefined
   }
 
   private updateMetadata(metadata: avSession.AVMetadata) {

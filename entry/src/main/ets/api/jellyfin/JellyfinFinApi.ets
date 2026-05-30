@@ -442,6 +442,16 @@ export class JellyfinFinApi implements FinMusicApi {
     }
   }
 
+  async getLyrics(id: string): Promise<object | undefined> {
+    try {
+      return await this.jellyfin.apiClient.get<object>({
+        path: `/Audio/${id}/Lyrics`
+      })
+    } catch (_) {
+      return undefined
+    }
+  }
+
   async release(): Promise<void> {
     this.jellyfin.apiClient.release()
   }

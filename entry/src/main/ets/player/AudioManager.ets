@@ -1,8 +1,7 @@
 import { BaseItemDto } from '@ohpg/jellyfin'
-import { AVPlaybackManager, AVPlayerKit } from '@ohpg/player'
+import { AVPlaybackManager } from '@ohpg/player'
 import { Repository } from '../data/Repository'
 import { AppPlaybackManager } from './AppPlaybackManager'
-import { AppMediaResolver } from './AppMediaResolver'
 import { PlayArgs } from './AppPlayerContext'
 
 /**
@@ -19,8 +18,6 @@ export class AudioManager {
 
   constructor(context: Context) {
     this.repository = AppStorage.get(Repository.REPOSITORY)!
-    // 注册媒体解析器（将 assetId 解析为流 URL）
-    AVPlayerKit.setMediaResolver(new AppMediaResolver(this.repository))
   }
 
   /**

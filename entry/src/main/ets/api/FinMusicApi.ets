@@ -225,4 +225,11 @@ export interface FinMusicApi extends FinApi {
    */
   setPlaylist(playlistId: string | undefined, ids: Array<string>, clientName: string): Promise<string | undefined>
 
+  /**
+   * 获取歌词
+   * @param id 音频 item id
+   * @returns LyricDto JSON 或 undefined
+   */
+  getLyrics(id: string): Promise<object | undefined>
+
 }

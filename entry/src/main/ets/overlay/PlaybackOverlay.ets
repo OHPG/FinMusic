@@ -135,7 +135,7 @@ struct PlaybackOverlayComp {
     Stack({alignContent: Alignment.Bottom}) {
       Row({space: CommonConstants.SPACE_8}) {
         Image(this.mediaMetadata?.mediaImage)
-          .alt($r('app.media.alt'))
+          .alt($r('app.media.default_cover'))
           .objectFit(ImageFit.Cover)
           .autoResize(true)
           .height(56)

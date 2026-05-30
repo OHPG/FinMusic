@@ -81,11 +81,11 @@ export class AppPlayerContext extends AVPlayerContext {
         description: {
           assetId: dto.Id!,
           title: dto.Name ?? undefined,
+          artist: dto.AlbumArtist ?? undefined,
+          albumTitle: dto.Album ?? undefined,
           mediaType: 'audio',
           mediaImage: mediaImage,
           mediaUri: dto.Id!,
-          subtitle: dto.AlbumArtist ?? undefined,
-          description: dto.Album ?? undefined,
           duration: duration,
         }
       })

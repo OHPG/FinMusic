@@ -33,7 +33,7 @@ struct AlbumPage {
   movieScrollView(group?: GroupInfo) {
     Column({ space: CommonConstants.SPACE_12 }) {
       Image(this.repository?.buildImage(group!.group!, ImageType.Primary))
-        .alt($r('app.media.alt'))
+        .alt($r('app.media.default_cover'))
         .objectFit(ImageFit.Cover)
         .autoResize(true)
         .width(CommonConstants.FULL_PERCENT)
