@@ -8,6 +8,7 @@ import { MainViewModel } from "./MainViewModel"
 import { router, window } from "@kit.ArkUI"
 import { BreakpointSystem } from "@ohpg/fin-core"
 import { AppPlaybackManager } from "../../../player/AppPlaybackManager"
+import { AVPlaybackManager } from "@ohpg/player"
 import { PlayerRouter } from "@ohpg/widget"
 
 @Component
@@ -67,7 +68,7 @@ async function onMainItemClick(context: UIContext, group: MainGroup, item: BaseI
     }
     router.pushUrl({url: 'pages/detail/album/AlbumPage', params: args})
   } else if (item.Type === BaseItemKind.Audio) {
-    let playbackManager: AppPlaybackManager = AppStorage.get(AppPlaybackManager.APP_PLAYBACK_MANAGER)!
+    let playbackManager: AppPlaybackManager = AppStorage.get(AVPlaybackManager.AV_PLAYER_MANAGER)!
     console.info("FinMusic: onMainItemClick Audio id=" + item.Id)
     let result = playbackManager.playItems(group.items, item.Id!)
     console.info("FinMusic: onMainItemClick playAll result=" + result + ", pushing PlayerRouter")

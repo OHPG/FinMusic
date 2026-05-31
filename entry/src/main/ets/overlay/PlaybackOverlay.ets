@@ -1,6 +1,7 @@
 import { avSession } from "@kit.AVSessionKit"
 import { BreakpointSystem } from "@ohpg/fin-core"
 import { AppPlaybackManager } from "../player/AppPlaybackManager"
+import { AVPlaybackManager } from "@ohpg/player"
 import { CommonConstants } from "../common/CommonConstants"
 import { ComponentContent, OverlayManager, window } from "@kit.ArkUI"
 import { AbilityConstant, EnvironmentCallback, Configuration } from "@kit.AbilityKit"
@@ -11,7 +12,7 @@ export class PlaybackOverlay {
 
   private readonly context: UIContext
 
-  private readonly playbackManager: AppPlaybackManager = AppStorage.get(AppPlaybackManager.APP_PLAYBACK_MANAGER)!
+  private readonly playbackManager: AppPlaybackManager = AppStorage.get(AVPlaybackManager.AV_PLAYER_MANAGER)!
 
   private overlayManager?: OverlayManager
 

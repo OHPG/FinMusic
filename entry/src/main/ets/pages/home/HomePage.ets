@@ -5,6 +5,7 @@ import { ArtistPage } from './artist/ArtistPage'
 import { GenrePage } from './genre/GenrePage'
 import { MainPage } from './main/MainPage'
 import { AppPlaybackManager } from '../../player/AppPlaybackManager'
+import { AVPlaybackManager } from '@ohpg/player'
 import { CommonConstants } from '../../common/CommonConstants'
 import { window } from '@kit.ArkUI'
 
@@ -18,7 +19,7 @@ struct HomePage {
 
   private controller: TabsController = new TabsController()
 
-  private playbackManager: AppPlaybackManager = AppStorage.get(AppPlaybackManager.APP_PLAYBACK_MANAGER)!
+  private playbackManager: AppPlaybackManager = AppStorage.get(AVPlaybackManager.AV_PLAYER_MANAGER)!
 
   aboutToAppear(): void {
     AppStorage.setOrCreate("playerHeight", 60)

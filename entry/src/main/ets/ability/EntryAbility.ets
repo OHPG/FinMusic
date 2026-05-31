@@ -38,7 +38,6 @@ export default class EntryAbility extends UIAbility {
       let uiContext = mainWindow.getUIContext()
       let playbackManager = new AppPlaybackManager(uiContext)
       AppStorage.setOrCreate(AVPlaybackManager.AV_PLAYER_MANAGER, playbackManager)
-      AppStorage.setOrCreate(AppPlaybackManager.APP_PLAYBACK_MANAGER, playbackManager)
       hilog.info(0x0000, 'testTag', 'Succeeded in loading the content.');
     });
   }
@@ -48,7 +47,7 @@ export default class EntryAbility extends UIAbility {
     this.breakpointSystem.unregister()
     // Main window is destroyed, release UI related resources
     hilog.info(0x0000, 'testTag', '%{public}s', 'Ability onWindowStageDestroy');
-    let playbackManager = AppStorage.get<AppPlaybackManager>(AppPlaybackManager.APP_PLAYBACK_MANAGER)
+    let playbackManager = AppStorage.get<AppPlaybackManager>(AVPlaybackManager.AV_PLAYER_MANAGER)
     playbackManager?.release()
   }
 

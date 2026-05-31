@@ -7,6 +7,7 @@ import { window } from '@kit.ArkUI'
 import { Repository } from '../../../data/Repository'
 import { GroupInfo } from '../../../entity/GroupInfo'
 import { AppPlaybackManager } from '../../../player/AppPlaybackManager'
+import { AVPlaybackManager } from '@ohpg/player'
 import { BreakpointSystem } from '@ohpg/fin-core'
 import { PlayerRouter } from '@ohpg/widget'
 
@@ -16,7 +17,7 @@ struct AlbumPage {
 
   private args: MediaArgs = this.getUIContext().getRouter().getParams() as MediaArgs
 
-  private playbackManager: AppPlaybackManager = AppStorage.get(AppPlaybackManager.APP_PLAYBACK_MANAGER)!
+  private playbackManager: AppPlaybackManager = AppStorage.get(AVPlaybackManager.AV_PLAYER_MANAGER)!
 
   public readonly repository: Repository = AppStorage.get(Repository.REPOSITORY)!
 

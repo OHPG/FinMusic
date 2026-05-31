@@ -15,8 +15,6 @@ import { PlayArgs } from './AppPlayerContext'
  */
 export class AppPlaybackManager extends AVWidgetPlaybackManager {
 
-  public static readonly APP_PLAYBACK_MANAGER = 'AppPlaybackManager'
-
   private readonly repository: Repository = AppStorage.get(Repository.REPOSITORY)!
 
   /**
