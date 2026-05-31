@@ -19,6 +19,8 @@ export class AppPrefer {
 
   private static readonly KEY_CACHE_MAX_COUNT = "cache_max_count"
 
+  private static readonly KEY_DNS_CACHE_ENABLED = "dns_cache_enabled"
+
   /** 默认缓存上限 512MB */
   public static readonly DEFAULT_CACHE_MAX_SIZE_MB: number = 512
 
@@ -69,6 +71,17 @@ export class AppPrefer {
 
   public setCacheMaxCount(count: number): void {
     this.preference.putSync(AppPrefer.KEY_CACHE_MAX_COUNT, count)
+    this.preference.flush()
+  }
+
+  // ─── DNS 缓存相关 ──────────────────────────────────────────────────────────
+
+  public isDnsCacheEnabled(): boolean {
+    return this.preference.getSync(AppPrefer.KEY_DNS_CACHE_ENABLED, true) as boolean
+  }
+
+  public setDnsCacheEnabled(enabled: boolean): void {
+    this.preference.putSync(AppPrefer.KEY_DNS_CACHE_ENABLED, enabled)
     this.preference.flush()
   }
 

@@ -14,6 +14,8 @@ struct CacheSettingPage {
 
   @State cacheEnabled: boolean = false
 
+  @State dnsCacheEnabled: boolean = true
+
   @State cacheMaxSizeMB: number = AppPrefer.DEFAULT_CACHE_MAX_SIZE_MB
 
   @State cacheMaxCount: number = AppPrefer.DEFAULT_CACHE_MAX_COUNT
@@ -22,6 +24,7 @@ struct CacheSettingPage {
 
   aboutToAppear(): void {
     this.cacheEnabled = this.prefer.isCacheEnabled()
+    this.dnsCacheEnabled = this.prefer.isDnsCacheEnabled()
     this.cacheMaxSizeMB = this.prefer.getCacheMaxSizeMB()
     this.cacheMaxCount = this.prefer.getCacheMaxCount()
     this.refreshCacheInfo()
@@ -141,7 +144,46 @@ struct CacheSettingPage {
           .attributeModifier(groupAttributeModifier)
           .padding({ bottom: CommonConstants.SPACE_12 })
 
-          // ===== Group 3: 当前缓存信息 =====
+          // ===== Group 3: DNS 缓存 =====
+          Column() {
+            Row() {
+              Text($r('app.string.dns_cache_enable'))
+                .fontSize(16)
+                .fontColor($r('sys.color.ohos_id_color_text_primary'))
+              Blank()
+              Toggle({ type: ToggleType.Switch, isOn: $$this.dnsCacheEnabled })
+                .onChange((isOn: boolean) => {
+                  this.prefer.setDnsCacheEnabled(isOn)
+                  Proxy.setDnsCacheEnabled(isOn)
+                })
+            }
+            .width(CommonConstants.FULL_PERCENT)
+            .height(56)
+            .padding({
+              left: CommonConstants.SPACE_16,
+              right: CommonConstants.SPACE_16
+            })
+
+            itemDividerBuilder()
+
+            Row() {
+              Text($r('app.string.dns_cache_clear'))
+                .fontSize(16)
+                .fontColor($r('sys.color.ohos_id_color_text_primary'))
+            }
+            .width(CommonConstants.FULL_PERCENT)
+            .height(56)
+            .padding({
+              left: CommonConstants.SPACE_16,
+              right: CommonConstants.SPACE_16
+            })
+            .onClick(() => {
+              Proxy.clearDnsCache()
+            })
+          }
+          .attributeModifier(groupAttributeModifier)
+
+          // ===== Group 4: 当前缓存信息 =====
           Column() {
             Row() {
               Text($r('app.string.cache_current_size'))

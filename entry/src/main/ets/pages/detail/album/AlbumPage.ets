@@ -6,7 +6,7 @@ import { MediaArgs } from '../MediaArgs'
 import { window } from '@kit.ArkUI'
 import { Repository } from '../../../data/Repository'
 import { GroupInfo } from '../../../entity/GroupInfo'
-import { AudioManager } from '../../../player/AudioManager'
+import { AppPlaybackManager } from '../../../player/AppPlaybackManager'
 import { BreakpointSystem } from '@ohpg/fin-core'
 import { PlayerRouter } from '@ohpg/widget'
 
@@ -16,7 +16,7 @@ struct AlbumPage {
 
   private args: MediaArgs = this.getUIContext().getRouter().getParams() as MediaArgs
 
-  private audioManager: AudioManager = AppStorage.get(AudioManager.AUDIO_MANAGER)!
+  private playbackManager: AppPlaybackManager = AppStorage.get(AppPlaybackManager.APP_PLAYBACK_MANAGER)!
 
   public readonly repository: Repository = AppStorage.get(Repository.REPOSITORY)!
 
@@ -171,7 +171,7 @@ struct AlbumPage {
         .onClick(() => {
           if (group.items && group.items.length > 0) {
             let randomIndex = Math.floor(Math.random() * group.items.length)
-            this.audioManager.playAll(group.items, group.items[randomIndex].Id!)
+            this.playbackManager.playItems(group.items, group.items[randomIndex].Id!)
             PlayerRouter.push(this.getUIContext())
           }
         })
@@ -206,7 +206,7 @@ struct AlbumPage {
       })
       .onClick(() => {
         if (group.items && group.items.length > 0) {
-          this.audioManager.playAll(group.items, group.items[0].Id!)
+          this.playbackManager.playItems(group.items, group.items[0].Id!)
           PlayerRouter.push(this.getUIContext())
         }
       })
@@ -272,7 +272,7 @@ struct AlbumPage {
           .height(38)
           .onClick(() => {
             if (group.items && group.items.length > 0) {
-              this.audioManager.playAll(group.items, group.items[0].Id!)
+              this.playbackManager.playItems(group.items, group.items[0].Id!)
               PlayerRouter.push(this.getUIContext())
             }
           })
@@ -293,7 +293,7 @@ struct AlbumPage {
           .onClick(() => {
             if (group.items && group.items.length > 0) {
               let randomIndex = Math.floor(Math.random() * group.items.length)
-              this.audioManager.playAll(group.items, group.items[randomIndex].Id!)
+              this.playbackManager.playItems(group.items, group.items[randomIndex].Id!)
               PlayerRouter.push(this.getUIContext())
             }
           })
@@ -331,7 +331,7 @@ struct AlbumPage {
         })
         .onClick(() => {
           if (group.items && group.items.length > 0) {
-            this.audioManager.playAll(group.items, group.items[0].Id!)
+            this.playbackManager.playItems(group.items, group.items[0].Id!)
             PlayerRouter.push(this.getUIContext())
           }
         })
@@ -385,7 +385,7 @@ struct AlbumPage {
           right: CommonConstants.SPACE_16
         })
         .onClick(() => {
-          this.audioManager.playAll(group.items!, item.Id!)
+          this.playbackManager.playItems(group.items!, item.Id!)
           PlayerRouter.push(this.getUIContext())
         })
       })

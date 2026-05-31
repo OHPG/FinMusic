@@ -53,6 +53,7 @@ export class AppPlayer extends SystemPlayer {
     Proxy.setCacheConfig(cacheDir, maxSizeBytes, maxCount)
     Proxy.setLogEnabled(BuildProfile.DEBUG)
     await Proxy.start()
+    Proxy.setDnsCacheEnabled(prefer.isDnsCacheEnabled())
     this.proxyReady = true
     console.info("FinMusic: AppPlayer proxy started, port=" + Proxy.getPort())
   }

@@ -159,7 +159,7 @@ export interface FinMusicApi extends FinApi {
    * @param type
    * @returns
    */
-  buildImage(dto: BaseItemDto, type: string): string
+  buildImage(dto: BaseItemDto, type: string): string | undefined
 
   /**
    * 构建图片模糊哈希

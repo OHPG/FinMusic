@@ -67,7 +67,7 @@ export class Repository extends FinRepository {
     }
   }
 
-  public buildImage(dto: BaseItemDto, type: ImageType): string {
+  public buildImage(dto: BaseItemDto, type: ImageType): string | undefined {
     return this.requireApi().buildImage(dto, type)
   }
 

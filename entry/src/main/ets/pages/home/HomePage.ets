@@ -4,7 +4,7 @@ import { AlbumPage } from './album/AlbumPage'
 import { ArtistPage } from './artist/ArtistPage'
 import { GenrePage } from './genre/GenrePage'
 import { MainPage } from './main/MainPage'
-import { AudioManager } from '../../player/AudioManager'
+import { AppPlaybackManager } from '../../player/AppPlaybackManager'
 import { CommonConstants } from '../../common/CommonConstants'
 import { window } from '@kit.ArkUI'
 
@@ -18,12 +18,12 @@ struct HomePage {
 
   private controller: TabsController = new TabsController()
 
-  private audioManager: AudioManager = AppStorage.get(AudioManager.AUDIO_MANAGER)!
+  private playbackManager: AppPlaybackManager = AppStorage.get(AppPlaybackManager.APP_PLAYBACK_MANAGER)!
 
   aboutToAppear(): void {
     AppStorage.setOrCreate("playerHeight", 60)
     console.info("FinMusic: HomePage.aboutToAppear, start resumeAudioQueue")
-    this.audioManager.resumeAudioQueue()
+    this.playbackManager.resumeAudioQueue()
   }
 
   private onAvoidAreaChanged(): void {

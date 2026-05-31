@@ -4,7 +4,8 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 import { BreakpointSystem } from '@ohpg/fin-core';
 import { AvoidAreaSystem } from '@ohpg/fin-core';
 import { DeviceUtil } from '@ohpg/fin-framework';
-import { AudioManager } from '../player/AudioManager';
+import { AVPlaybackManager } from '@ohpg/player';
+import { AppPlaybackManager } from '../player/AppPlaybackManager';
 
 export default class EntryAbility extends UIAbility {
 
@@ -33,11 +34,11 @@ export default class EntryAbility extends UIAbility {
         return;
       }
       this.breakpointSystem.register(mainWindow)
-      let audioManager = new AudioManager(this.context)
-      AppStorage.setOrCreate(AudioManager.AUDIO_MANAGER, audioManager)
       // 初始化播放管理器（UIContext 此时可用）
       let uiContext = mainWindow.getUIContext()
-      audioManager.initPlaybackManager(uiContext)
+      let playbackManager = new AppPlaybackManager(uiContext)
+      AppStorage.setOrCreate(AVPlaybackManager.AV_PLAYER_MANAGER, playbackManager)
+      AppStorage.setOrCreate(AppPlaybackManager.APP_PLAYBACK_MANAGER, playbackManager)
       hilog.info(0x0000, 'testTag', 'Succeeded in loading the content.');
     });
   }
@@ -47,8 +48,8 @@ export default class EntryAbility extends UIAbility {
     this.breakpointSystem.unregister()
     // Main window is destroyed, release UI related resources
     hilog.info(0x0000, 'testTag', '%{public}s', 'Ability onWindowStageDestroy');
-    let audioManager = AppStorage.get<AudioManager>(AudioManager.AUDIO_MANAGER)
-    audioManager?.release()
+    let playbackManager = AppStorage.get<AppPlaybackManager>(AppPlaybackManager.APP_PLAYBACK_MANAGER)
+    playbackManager?.release()
   }
 
   onForeground(): void {

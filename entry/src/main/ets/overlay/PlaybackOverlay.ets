@@ -1,6 +1,6 @@
 import { avSession } from "@kit.AVSessionKit"
 import { BreakpointSystem } from "@ohpg/fin-core"
-import { AudioManager } from "../player/AudioManager"
+import { AppPlaybackManager } from "../player/AppPlaybackManager"
 import { CommonConstants } from "../common/CommonConstants"
 import { ComponentContent, OverlayManager, window } from "@kit.ArkUI"
 import { AbilityConstant, EnvironmentCallback, Configuration } from "@kit.AbilityKit"
@@ -11,7 +11,7 @@ export class PlaybackOverlay {
 
   private readonly context: UIContext
 
-  private readonly audioManager: AudioManager = AppStorage.get(AudioManager.AUDIO_MANAGER)!
+  private readonly playbackManager: AppPlaybackManager = AppStorage.get(AppPlaybackManager.APP_PLAYBACK_MANAGER)!
 
   private overlayManager?: OverlayManager
 
@@ -40,7 +40,7 @@ export class PlaybackOverlay {
     this.overlayManager.addComponentContent(this.overlayNode)
     this.environmentCallbackId = this.context.getHostContext()?.getApplicationContext().on('environment', this.environmentCallback);
     console.info("FinMusic: PlaybackOverlay.attach, start resumeAudioQueue")
-    this.audioManager.resumeAudioQueue()
+    this.playbackManager.resumeAudioQueue()
   }
 
   public detach() {
@@ -66,8 +66,6 @@ function playbackOverlayBuilder() {
 
 @Component
 struct PlaybackOverlayComp {
-
-  private audioManager: AudioManager = AppStorage.get(AudioManager.AUDIO_MANAGER)!
 
   @State mediaMetadata?: avSession.AVMetadata = undefined
 

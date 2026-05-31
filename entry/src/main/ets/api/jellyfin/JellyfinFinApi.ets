@@ -103,18 +103,19 @@ export class JellyfinFinApi implements FinMusicApi {
     })
   }
 
-  buildImage(dto: BaseItemDto, type: string): string {
-    let imageUri = new uri.URI(this.activeInfo!.addressInfo.address)
+  buildImage(dto: BaseItemDto, type: string): string | undefined {
     let tag: string | undefined | null = dto.ImageTags?.[type]
     let id: string | undefined | null = dto.Id
     if (!tag) {
       tag = dto.AlbumPrimaryImageTag
       id = dto.AlbumId
     }
-    imageUri = imageUri.addEncodedSegment(`items/${id!}/Images/${type}`)
-    if (tag) {
-      imageUri = imageUri.addQueryValue("tag", tag)
+    if (!tag) {
+      return undefined
     }
+    let imageUri = new uri.URI(this.activeInfo!.addressInfo.address)
+    imageUri = imageUri.addEncodedSegment(`items/${id!}/Images/${type}`)
+    imageUri = imageUri.addQueryValue("tag", tag)
     return imageUri.toString()
   }
 

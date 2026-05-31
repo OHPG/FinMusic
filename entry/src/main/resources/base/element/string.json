@@ -169,6 +169,14 @@
       "value": "清除缓存"
     },
     {
+      "name": "dns_cache_enable",
+      "value": "DNS 缓存"
+    },
+    {
+      "name": "dns_cache_clear",
+      "value": "清除 DNS 缓存"
+    },
+    {
       "name": "album_play_all",
       "value": "播放全部"
     },
