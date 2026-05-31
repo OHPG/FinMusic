@@ -6,6 +6,8 @@
     "pages/detail/artist/ArtistPage",
     "pages/detail/genre/GenrePage",
     "pages/setting/SettingPage",
+    "pages/setting/PlaybackSettingPage",
+    "pages/setting/CacheSettingPage",
     "pages/about/AboutPage"
   ]
 }

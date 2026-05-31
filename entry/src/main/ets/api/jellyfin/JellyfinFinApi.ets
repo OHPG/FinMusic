@@ -452,6 +452,20 @@ export class JellyfinFinApi implements FinMusicApi {
     }
   }
 
+  async toggleFavorite(id: string, favorite: boolean): Promise<void> {
+    if (favorite) {
+      await this.jellyfin.getUserLibraryApi().markFavoriteItem({
+        itemId: id,
+        userId: this.activeInfo!.userInfo.userId
+      })
+    } else {
+      await this.jellyfin.getUserLibraryApi().unmarkFavoriteItem({
+        itemId: id,
+        userId: this.activeInfo!.userInfo.userId
+      })
+    }
+  }
+
   async release(): Promise<void> {
     this.jellyfin.apiClient.release()
   }

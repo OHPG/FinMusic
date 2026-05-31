@@ -1,4 +1,3 @@
-import { PlaybackOverlay } from '../../overlay/PlaybackOverlay'
 import { HomeToolBar } from '../../widget/bar/HomeToolBar'
 import { PlaybackBar } from '../../widget/bar/PlaybackBar'
 import { AlbumPage } from './album/AlbumPage'
@@ -13,10 +12,6 @@ import { window } from '@kit.ArkUI'
 @Component
 struct HomePage {
 
-  @State fontColor: string = '#182431'
-
-  @State selectedFontColor: string = '#007DFF'
-
   @State currentIndex: number = 0
 
   @StorageProp('currentAvoidArea') @Watch('onAvoidAreaChanged') currentAvoidArea?: window.AvoidArea = undefined
@@ -25,13 +20,7 @@ struct HomePage {
 
   private audioManager: AudioManager = AppStorage.get(AudioManager.AUDIO_MANAGER)!
 
-  // 保留 overlay 代码，但不再使用
-  // private playbackOverlay: PlaybackOverlay = new PlaybackOverlay(this.getUIContext())
-
   aboutToAppear(): void {
-    // 不再使用 overlay 方式
-    // console.info("FinMusic: HomePage.aboutToAppear, attaching playbackOverlay")
-    // this.playbackOverlay.attach()
     AppStorage.setOrCreate("playerHeight", 60)
     console.info("FinMusic: HomePage.aboutToAppear, start resumeAudioQueue")
     this.audioManager.resumeAudioQueue()
@@ -43,16 +32,26 @@ struct HomePage {
   @Builder tabBuilder(index: number, name: ResourceStr) {
     Column() {
       Text(name)
-        .fontColor(this.currentIndex === index ? '#1698CE' : '#6B6B6B')
-        .fontSize(16)
-        .fontWeight(this.currentIndex === index ? 500 : 400)
+        .fontColor(this.currentIndex === index
+          ? $r('sys.color.ohos_id_color_text_primary')
+          : $r('sys.color.ohos_id_color_text_secondary'))
+        .fontSize(15)
+        .fontWeight(this.currentIndex === index ? FontWeight.Medium : FontWeight.Regular)
+        .fontFamily(this.currentIndex === index
+          ? CommonConstants.HARMONY_HEITI_MEDIUM_FONT_FAMILY
+          : CommonConstants.HARMONY_HEI_TI_FONT_FAMILY)
         .lineHeight(22)
-        .margin({ top: 6, bottom: 6 })
-      Divider()
-        .strokeWidth(2)
-        .color('#007DFF')
+        .margin({ top: 8, bottom: 8 })
+
+      Row()
+        .width(20)
+        .height(3)
+        .borderRadius(1.5)
+        .backgroundColor($r('sys.color.ohos_id_color_activated'))
         .opacity(this.currentIndex === index ? 1 : 0)
-    }.width('100%')
+    }
+    .justifyContent(FlexAlign.Center)
+    .width('100%')
   }
 
   build() {
@@ -83,16 +82,12 @@ struct HomePage {
             GenrePage()
           }
           .tabBar(this.tabBuilder(3, $r('app.string.home_genre')))
-
-          // TabContent() {
-          //   TrackPage()
-          // }
-          // .tabBar(this.tabBuilder(4, $r('app.string.home_track')))
         }
         .vertical(false)
         .barMode(BarMode.Fixed)
         .barWidth('100%')
-        .barHeight(38)
+        .barHeight(42)
+        .animationDuration(200)
         .onChange((index: number) => {
           this.currentIndex = index
         })
@@ -115,8 +110,6 @@ struct HomePage {
   }
 
   aboutToDisappear(): void {
-    // 不再使用 overlay 方式
-    // this.playbackOverlay.detach()
   }
 
 }

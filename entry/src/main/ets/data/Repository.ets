@@ -318,6 +318,15 @@ export class Repository extends FinRepository {
     return this.requireApi().getLyrics(id)
   }
 
+  /**
+   * 切换收藏状态
+   * @param id item id
+   * @param favorite 是否收藏
+   */
+  public toggleFavorite(id: string, favorite: boolean): Promise<void> {
+    return this.requireApi().toggleFavorite(id, favorite)
+  }
+
   private async getPlaylistIdInternal(): Promise<string | undefined> {
     if (this.playlistId) {
       return this.playlistId

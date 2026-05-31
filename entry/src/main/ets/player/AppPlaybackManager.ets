@@ -33,14 +33,14 @@ export class AppPlaybackManager extends AVWidgetPlaybackManager {
   }
 
   /**
-   * 覆写 playAll：如果播放器已存在，直接替换播放（音乐场景复用播放器）
+   * 覆写 playAll：如果播放器已存在，使用 replaceAndPlay 替换播放（音乐场景复用播放器）
    */
   public playAll(args: Object): boolean {
     console.info("FinMusic: AppPlaybackManager.playAll hasPlayer=" + this.hasPlayer())
     if (this.hasPlayer()) {
-      console.info("FinMusic: play (reuse existing player)")
-      this.getPlayerContext()!.play(args).catch((e: Error) => {
-        console.error("FinMusic: play error: " + e.message)
+      console.info("FinMusic: replaceAndPlay (reuse existing player)")
+      this.getPlayerContext()!.replaceAndPlay(args).catch((e: Error) => {
+        console.error("FinMusic: replaceAndPlay error: " + e.message)
       })
       return true
     }

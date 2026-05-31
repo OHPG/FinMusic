@@ -232,4 +232,11 @@ export interface FinMusicApi extends FinApi {
    */
   getLyrics(id: string): Promise<object | undefined>
 
+  /**
+   * 切换收藏状态
+   * @param id item id
+   * @param favorite 是否收藏
+   */
+  toggleFavorite(id: string, favorite: boolean): Promise<void>
+
 }

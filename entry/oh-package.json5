@@ -13,9 +13,10 @@
     "@ohpg/jellyfin": 'file:../sdk/jellyfin',
     "@ohpg/fin-core": 'file:../framewrok/lib_core',
     "@ohpg/fin-framework": 'file:../framewrok/lib_framework',
-    "@ohpg/core": "0.8.4",
-    "@ohpg/player": "0.8.4",
-    "@ohpg/widget": "0.8.4",
-    "@ohpg/system": "0.8.4"
+    "@ohpg/core": "@param:ohpg",
+    "@ohpg/player": "@param:ohpg",
+    "@ohpg/widget": "@param:ohpg",
+    "@ohpg/system": "@param:ohpg",
+    "@ohpg/proxy": "@param:ohpg"
   }
 }

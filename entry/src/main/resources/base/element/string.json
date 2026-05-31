@@ -135,6 +135,54 @@
     {
       "name": "prefer_privacy",
       "value": "隐私政策"
+    },
+    {
+      "name": "prefer_playback",
+      "value": "播放器"
+    },
+    {
+      "name": "prefer_cache",
+      "value": "缓存"
+    },
+    {
+      "name": "cache_enable",
+      "value": "边播边缓存"
+    },
+    {
+      "name": "cache_max_size",
+      "value": "缓存大小上限"
+    },
+    {
+      "name": "cache_max_count",
+      "value": "缓存数量上限"
+    },
+    {
+      "name": "cache_current_size",
+      "value": "当前缓存大小"
+    },
+    {
+      "name": "cache_current_count",
+      "value": "当前缓存数量"
+    },
+    {
+      "name": "cache_clear",
+      "value": "清除缓存"
+    },
+    {
+      "name": "album_play_all",
+      "value": "播放全部"
+    },
+    {
+      "name": "album_play_all_count",
+      "value": "播放全部 %s"
+    },
+    {
+      "name": "album_shuffle",
+      "value": "随机播放"
+    },
+    {
+      "name": "album_collect",
+      "value": "收藏"
     }
   ]
 }

@@ -1,8 +1,8 @@
 import { AVCodecType, AVPlayer, AVPlayerFactory, AVRenderType } from '@ohpg/player'
-import { SystemPlayer } from '@ohpg/system'
+import { AppPlayer } from './AppPlayer'
 
 export class AppPlayerFactory implements AVPlayerFactory {
   create(context: Context, render: AVRenderType, codec?: AVCodecType): AVPlayer {
-    return new SystemPlayer(context, render, codec)
+    return new AppPlayer(context, render, codec)
   }
 }

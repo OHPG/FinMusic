@@ -15,39 +15,30 @@ export struct HomeToolBar {
         .width('100%')
         .height(px2vp(this.avoidArea?.topRect.height))
 
-      Row({space: CommonConstants.SPACE_16}) {
+      Row() {
         Text(this.title)
           .fontSize($r('app.float.header_font_size'))
           .fontColor($r('sys.color.ohos_id_color_text_primary'))
           .fontWeight(FontWeight.Bold)
           .textAlign(TextAlign.Start)
           .fontFamily(CommonConstants.HARMONY_HEITI_BOLD_FONT_FAMILY)
-          .margin({ right: $r('app.float.sm_padding_margin') })
 
-          Blank()
+        Blank()
 
-        // Search({ placeholder: $r('app.string.search') })
-        //   .focusable(false)
-        //   .fontColor($r('sys.color.ohos_id_color_text_primary'))
-        //   .textFont({ size: $r('app.float.large_text_size') })
-        //   .width($r('app.float.search_width'))
-        //   .height($r('app.float.search_height'))
-        //   .onClick(() => {
-        //     this.getUIContext().getRouter().pushUrl({
-        //       url: "pages/search/SearchPage"
-        //     })
-        //   })
+        Row({ space: CommonConstants.SPACE_4 }) {
+          SourceMenu()
 
-        SourceMenu()
-
-        SymbolGlyph($r('sys.symbol.gearshape_fill'))
-          .fontSize($r('sys.float.Title_M'))
-          // .fontSize($r('app.float.header_font_size'))
-          .fontColor([$r('sys.color.font_primary')])
-          .onClick(() => {
-            router.pushUrl({url: "pages/setting/SettingPage"})
-          })
+          SymbolGlyph($r('sys.symbol.gearshape_fill'))
+            .fontSize(22)
+            .fontColor([$r('sys.color.ohos_id_color_text_secondary')])
+            .padding(8)
+            .borderRadius(20)
+            .onClick(() => {
+              router.pushUrl({ url: "pages/setting/SettingPage" })
+            })
+        }
       }
+      .alignItems(VerticalAlign.Center)
       .padding({
         left: $r('sys.float.ohos_id_default_padding_start'),
         right: $r('sys.float.ohos_id_default_padding_end')
