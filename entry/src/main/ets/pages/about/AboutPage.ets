@@ -9,8 +9,6 @@ struct AboutPage {
 
   @StorageProp("currentAvoidArea") avoidArea?: window.AvoidArea = undefined
 
-  @StorageProp('playerHeight') currentAvoidMedia: number = 0
-
   build() {
 
     Column({space: CommonConstants.SPACE_8}) {
@@ -69,7 +67,7 @@ struct AboutPage {
 
     }
     .padding({
-      bottom: px2vp(this.avoidArea?.bottomRect.height) + this.currentAvoidMedia
+      bottom: px2vp(this.avoidArea?.bottomRect.height)
     })
     .width(CommonConstants.FULL_PERCENT)
     .height(CommonConstants.FULL_PERCENT)

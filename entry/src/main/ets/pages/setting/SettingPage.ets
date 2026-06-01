@@ -15,8 +15,6 @@ struct SettingPage {
 
   @StorageProp('currentAvoidArea') avoidArea?: window.AvoidArea = undefined
 
-  @StorageProp('playerHeight') currentAvoidMedia: number = 0
-
   build() {
     Column({ space: CommonConstants.SPACE_8 }) {
       ToolBar({ title: $r('app.string.prefer') })
@@ -84,6 +82,9 @@ struct SettingPage {
           }
           .attributeModifier(groupAttributeModifier)
 
+          Blank()
+            .layoutWeight(1)
+
           // QQ群
           Row({ space: CommonConstants.SPACE_4 }) {
             Text($r('app.string.prefer_about_qq_group'))
@@ -123,7 +124,7 @@ struct SettingPage {
           minHeight: "100%"
         })
         .padding({
-          bottom: px2vp(this.avoidArea?.bottomRect.height) + this.currentAvoidMedia
+          bottom: px2vp(this.avoidArea?.bottomRect.height)
         })
       }
       .align(Alignment.Top)

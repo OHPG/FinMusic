@@ -25,8 +25,6 @@ struct AlbumPage {
 
   @StorageProp("currentAvoidArea") avoidArea?: window.AvoidArea = undefined
 
-  @StorageProp('playerHeight') currentAvoidMedia: number = 0
-
   @StorageProp(BreakpointSystem.CURRENT_WIDTH_BREAKPOINT) currentBreakpoint: WidthBreakpoint = WidthBreakpoint.WIDTH_SM
 
   @State group: GroupInfo | undefined = undefined
@@ -415,7 +413,7 @@ struct AlbumPage {
           .visibility(this.currentBreakpoint > WidthBreakpoint.WIDTH_SM ? Visibility.Visible : Visibility.None)
         }
         .padding({
-          bottom: px2vp(this.avoidArea?.bottomRect.height) + this.currentAvoidMedia
+          bottom: px2vp(this.avoidArea?.bottomRect.height)
         })
         .width(CommonConstants.FULL_PERCENT)
       }

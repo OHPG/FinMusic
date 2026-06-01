@@ -15,8 +15,6 @@ struct GenrePage {
 
   @StorageProp("currentAvoidArea") currentAvoidArea?: window.AvoidArea = undefined
 
-  @StorageProp('playerHeight') currentAvoidMedia: number = 0
-
   @StorageLink(Repository.REPOSITORY) repository?: Repository = undefined
 
   private viewModel = new GenreViewModel(getContext(), this.args)
@@ -39,7 +37,7 @@ struct GenrePage {
           attr.padding = {
             left: CommonConstants.SPACE_16,
             right: CommonConstants.SPACE_16,
-            bottom: px2vp(this.currentAvoidArea?.bottomRect.height) + this.currentAvoidMedia
+            bottom: px2vp(this.currentAvoidArea?.bottomRect.height)
           }
           attr.rowsGap = CommonConstants.SPACE_12
           attr.columnsGap = CommonConstants.SPACE_12
