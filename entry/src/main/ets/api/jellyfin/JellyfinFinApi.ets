@@ -425,6 +425,10 @@ export class JellyfinFinApi implements FinMusicApi {
 
   async setPlaylist(playlistId: string | undefined, ids: Array<string>, clientName: string): Promise<string | undefined> {
     if (!playlistId) {
+      // 实时查询已有播放列表，避免重复创建
+      playlistId = await this.getPlaylistId(undefined, clientName)
+    }
+    if (!playlistId) {
       let result = await this.jellyfin.getPlaylistApi().createPlaylist({
         name: clientName,
         ids: ids,
