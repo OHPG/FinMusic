@@ -3,7 +3,6 @@ import { SystemPlayer } from '@ohpg/system'
 import { Proxy } from '@ohpg/proxy'
 import { MD5 } from '@ohpg/fin-core'
 import { AppPrefer } from '../prefer/AppPrefer'
-import BuildProfile from 'entry/BuildProfile';
 
 /**
  * FinMusic 的播放器实现。
@@ -40,18 +39,13 @@ export class AppPlayer extends SystemPlayer {
   }
 
   /**
-   * 确保代理已启动，未启动则启动并配置缓存
+   * 确保代理已启动，未启动则启动
    */
   private async ensureProxy(): Promise<void> {
     if (this.proxyReady && Proxy.isRunning()) {
       return
     }
     let prefer = AppStorage.get<AppPrefer>(AppPrefer.PREFER)!
-    let cacheDir = this.context.getApplicationContext().cacheDir + '/audio_cache'
-    let maxSizeBytes = prefer.getCacheMaxSizeMB() * 1024 * 1024
-    let maxCount = prefer.getCacheMaxCount()
-    Proxy.setCacheConfig(cacheDir, maxSizeBytes, maxCount)
-    Proxy.setLogEnabled(BuildProfile.DEBUG)
     await Proxy.start()
     Proxy.setDnsCacheEnabled(prefer.isDnsCacheEnabled())
     this.proxyReady = true

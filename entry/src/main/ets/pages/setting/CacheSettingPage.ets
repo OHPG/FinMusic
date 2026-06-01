@@ -3,6 +3,7 @@ import { CommonConstants, ToolBar } from '@ohpg/fin-framework'
 import { Proxy } from '@ohpg/proxy'
 import { groupAttributeModifier, itemDividerBuilder, windowAttributeModifier } from '../../style/Modifier'
 import { AppPrefer } from '../../prefer/AppPrefer'
+import { LyricCache } from '../../player/LyricCache'
 
 @Entry
 @Component
@@ -12,7 +13,11 @@ struct CacheSettingPage {
 
   private prefer: AppPrefer = AppStorage.get<AppPrefer>(AppPrefer.PREFER)!
 
+  private lyricCache: LyricCache = AppStorage.get<LyricCache>(LyricCache.LYRIC_CACHE)!
+
   @State cacheEnabled: boolean = false
+
+  @State lyricCacheEnabled: boolean = true
 
   @State dnsCacheEnabled: boolean = true
 
@@ -24,6 +29,7 @@ struct CacheSettingPage {
 
   aboutToAppear(): void {
     this.cacheEnabled = this.prefer.isCacheEnabled()
+    this.lyricCacheEnabled = this.prefer.isLyricCacheEnabled()
     this.dnsCacheEnabled = this.prefer.isDnsCacheEnabled()
     this.cacheMaxSizeMB = this.prefer.getCacheMaxSizeMB()
     this.cacheMaxCount = this.prefer.getCacheMaxCount()
@@ -31,8 +37,15 @@ struct CacheSettingPage {
   }
 
   private refreshCacheInfo(): void {
-    let sizeBytes = Proxy.getCacheSize()
-    this.currentCacheSize = this.formatSize(sizeBytes)
+    let proxyCacheSize = Proxy.getCacheSize()
+    let lyricCacheSize = this.lyricCache.getCacheSize()
+    this.currentCacheSize = this.formatSize(proxyCacheSize + lyricCacheSize)
+  }
+
+  private applyCacheConfig(): void {
+    let cacheDir = getContext().getApplicationContext().cacheDir + '/audio_cache'
+    let maxSizeBytes = this.cacheMaxSizeMB * 1024 * 1024
+    Proxy.setCacheConfig(cacheDir, maxSizeBytes, this.cacheMaxCount)
   }
 
   private formatSize(bytes: number): string {
@@ -76,6 +89,25 @@ struct CacheSettingPage {
               left: CommonConstants.SPACE_16,
               right: CommonConstants.SPACE_16
             })
+
+            itemDividerBuilder()
+
+            Row() {
+              Text($r('app.string.lyric_cache_enable'))
+                .fontSize(16)
+                .fontColor($r('sys.color.ohos_id_color_text_primary'))
+              Blank()
+              Toggle({ type: ToggleType.Switch, isOn: $$this.lyricCacheEnabled })
+                .onChange((isOn: boolean) => {
+                  this.prefer.setLyricCacheEnabled(isOn)
+                })
+            }
+            .width(CommonConstants.FULL_PERCENT)
+            .height(56)
+            .padding({
+              left: CommonConstants.SPACE_16,
+              right: CommonConstants.SPACE_16
+            })
           }
           .attributeModifier(groupAttributeModifier)
 
@@ -108,6 +140,7 @@ struct CacheSettingPage {
               .onChange((value: number) => {
                 this.cacheMaxSizeMB = value
                 this.prefer.setCacheMaxSizeMB(value)
+                this.applyCacheConfig()
               })
 
             itemDividerBuilder()
@@ -139,6 +172,7 @@ struct CacheSettingPage {
               .onChange((value: number) => {
                 this.cacheMaxCount = value
                 this.prefer.setCacheMaxCount(value)
+                this.applyCacheConfig()
               })
           }
           .attributeModifier(groupAttributeModifier)
@@ -214,6 +248,7 @@ struct CacheSettingPage {
             .margin({ top: CommonConstants.SPACE_16, bottom: CommonConstants.SPACE_16 })
             .onClick(async () => {
               await Proxy.clearCache()
+              this.lyricCache.clearAll()
               this.refreshCacheInfo()
             })
         }

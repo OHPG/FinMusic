@@ -149,6 +149,10 @@
       "value": "边播边缓存"
     },
     {
+      "name": "lyric_cache_enable",
+      "value": "歌词缓存"
+    },
+    {
       "name": "cache_max_size",
       "value": "缓存大小上限"
     },

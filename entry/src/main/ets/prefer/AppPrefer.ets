@@ -23,6 +23,8 @@ export class AppPrefer {
 
   private static readonly KEY_CAST_ENABLED = "cast_enabled"
 
+  private static readonly KEY_LYRIC_CACHE_ENABLED = "lyric_cache_enabled"
+
   /** 默认缓存上限 1024MB */
   public static readonly DEFAULT_CACHE_MAX_SIZE_MB: number = 2048
 
@@ -84,6 +86,17 @@ export class AppPrefer {
 
   public setDnsCacheEnabled(enabled: boolean): void {
     this.preference.putSync(AppPrefer.KEY_DNS_CACHE_ENABLED, enabled)
+    this.preference.flush()
+  }
+
+  // ─── 歌词缓存相关 ─────────────────────────────────────────────────────────
+
+  public isLyricCacheEnabled(): boolean {
+    return this.preference.getSync(AppPrefer.KEY_LYRIC_CACHE_ENABLED, true) as boolean
+  }
+
+  public setLyricCacheEnabled(enabled: boolean): void {
+    this.preference.putSync(AppPrefer.KEY_LYRIC_CACHE_ENABLED, enabled)
     this.preference.flush()
   }
 

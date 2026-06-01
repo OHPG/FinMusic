@@ -17,7 +17,7 @@ struct SplashPage {
   aboutToAppear(): void {
     if (this.appPrefer.isPrivacyGrant()) {
       setTimeout(() => {
-        this.enterHomeOrAddServer()
+        this.initAndWait()
       }, 1000)
     } else {
       let resourceManager = getContext().resourceManager
@@ -27,7 +27,7 @@ struct SplashPage {
         this.appPrefer.setPrivacyGrant()
         this.privacyDialog.dismiss(true)
         setTimeout(() => {
-          this.enterHomeOrAddServer()
+          this.initAndWait()
         }, 1000)
       })
       this.privacyDialog.show()
@@ -56,8 +56,13 @@ struct SplashPage {
 
   }
 
-  private enterHomeOrAddServer() {
-    let activeInfo = this.repository?.getActiveInfo()
+  private async initAndWait() {
+    let delay = new Promise<void>((resolve) => setTimeout(resolve, 1000))
+    let init = this.repository.init().catch((e: Error) => {
+      console.error("FinMusic: repository init failed: " + e.message)
+    })
+    await Promise.all([delay, init])
+    let activeInfo = this.repository.getActiveInfo()
     if (activeInfo) {
       router.replaceUrl({url: 'pages/home/HomePage'})
     } else {
