@@ -23,11 +23,11 @@ export class AppPrefer {
 
   private static readonly KEY_CAST_ENABLED = "cast_enabled"
 
-  /** 默认缓存上限 512MB */
-  public static readonly DEFAULT_CACHE_MAX_SIZE_MB: number = 512
+  /** 默认缓存上限 1024MB */
+  public static readonly DEFAULT_CACHE_MAX_SIZE_MB: number = 2048
 
-  /** 默认缓存文件数量上限 200 */
-  public static readonly DEFAULT_CACHE_MAX_COUNT: number = 200
+  /** 默认缓存文件数量上限 256 */
+  public static readonly DEFAULT_CACHE_MAX_COUNT: number = 256
 
   private readonly preference: preferences.Preferences
 

@@ -101,7 +101,7 @@ struct CacheSettingPage {
             Slider({
               value: this.cacheMaxSizeMB,
               min: 128,
-              max: 2048,
+              max: 4096,
               step: 128
             })
               .width('90%')
@@ -131,7 +131,7 @@ struct CacheSettingPage {
 
             Slider({
               value: this.cacheMaxCount,
-              min: 50,
+              min: 100,
               max: 1000,
               step: 50
             })
