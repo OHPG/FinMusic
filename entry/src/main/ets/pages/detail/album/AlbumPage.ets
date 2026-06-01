@@ -142,9 +142,11 @@ struct AlbumPage {
       Row({ space: CommonConstants.SPACE_12 }) {
         Button({ type: ButtonType.Capsule }) {
           Row({ space: CommonConstants.SPACE_8 }) {
-            SymbolGlyph($r('sys.symbol.heart'))
+            SymbolGlyph(this.group?.group?.UserData?.IsFavorite ? $r('sys.symbol.heart_fill') : $r('sys.symbol.heart'))
               .fontSize(18)
-              .fontColor([$r('sys.color.ohos_id_color_text_primary')])
+              .fontColor([this.group?.group?.UserData?.IsFavorite
+                ? Color.Red
+                : $r('sys.color.ohos_id_color_text_primary')])
             Text($r('app.string.album_collect'))
               .fontSize(14)
               .fontColor($r('sys.color.ohos_id_color_text_primary'))
@@ -153,6 +155,9 @@ struct AlbumPage {
         .height(36)
         .layoutWeight(1)
         .backgroundColor($r('sys.color.ohos_id_color_button_normal'))
+        .onClick(() => {
+          this.toggleAlbumFavorite()
+        })
 
         Button({ type: ButtonType.Capsule }) {
           Row({ space: CommonConstants.SPACE_8 }) {
@@ -471,6 +476,24 @@ struct AlbumPage {
       return parts.join(' - ')
     }
     return this.formatTrackDuration(item.RunTimeTicks)
+  }
+
+  private toggleAlbumFavorite(): void {
+    if (!this.group?.group) return
+    let isFav = this.group.group.UserData?.IsFavorite ?? false
+    this.repository.toggleFavorite(this.group.group.Id!, !isFav)
+      .then(() => {
+        if (this.group?.group?.UserData) {
+          this.group.group.UserData.IsFavorite = !isFav
+        }
+        // 重新赋值触发 @State 刷新
+        let current = this.group!
+        this.group = undefined
+        this.group = current
+      })
+      .catch((e: Error) => {
+        console.error("FinMusic: toggleAlbumFavorite error: " + e.message)
+      })
   }
 
   private toggleFavorite(item: BaseItemDto, index: number): void {
