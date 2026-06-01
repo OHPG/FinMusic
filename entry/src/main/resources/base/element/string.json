@@ -191,6 +191,18 @@
     {
       "name": "album_collect",
       "value": "收藏"
+    },
+    {
+      "name": "prefer_auto_next",
+      "value": "自动连播"
+    },
+    {
+      "name": "prefer_background_play",
+      "value": "后台播放"
+    },
+    {
+      "name": "prefer_cast",
+      "value": "投屏"
     }
   ]
 }

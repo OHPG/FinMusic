@@ -7,6 +7,7 @@ import {
 import { avSession } from '@kit.AVSessionKit'
 import { BaseItemDto, ImageType } from '@ohpg/jellyfin'
 import { Repository } from '../data/Repository'
+import { AppPrefer } from '../prefer/AppPrefer'
 
 export interface PlayArgs {
   items: Array<BaseItemDto>
@@ -32,12 +33,15 @@ export class AppPlayerContext extends AVPlayerContext {
   constructor(uiContext: UIContext, repository: Repository) {
     let playerPrefer = AVPlayerKit.getPrefer()
     let config = playerPrefer.toPlayerConfig()
-    // 音乐始终后台播放
-    config.backgroundPlay = true
     super(uiContext, config)
     this.repository = repository
+    // 音乐强制开启后台播放
+    playerPrefer.setBackgroundPlay(true)
     // 音乐 App 不需要画中画
     this.control.setPipEnabled(false)
+    // 投屏开关（从 AppPrefer 读取）
+    let appPrefer = AppStorage.get<AppPrefer>(AppPrefer.PREFER)
+    this.control.setCastEnabled(appPrefer?.isCastEnabled() ?? true)
   }
 
   // ─── 抽象方法实现 ──────────────────────────────────────────────────────────

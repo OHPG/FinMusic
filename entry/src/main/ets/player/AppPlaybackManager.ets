@@ -18,13 +18,6 @@ export class AppPlaybackManager extends AVWidgetPlaybackManager {
   private readonly repository: Repository = AppStorage.get(Repository.REPOSITORY)!
 
   /**
-   * 音乐播放页隐藏时不暂停（始终后台播放）
-   */
-  public onPageHide(): void {
-    // no-op: 音乐不因页面隐藏而暂停
-  }
-
-  /**
    * 音乐播放页销毁时不销毁播放器（音乐持续播放）
    */
   public onPageDisappear(): void {

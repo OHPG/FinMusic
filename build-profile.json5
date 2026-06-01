@@ -10,6 +10,17 @@
           "strictMode": {
             "caseSensitiveCheck": true,
             "useNormalizedOHMUrl": true
+          },
+          "nativeLib": {
+            "debugSymbol": {
+              "strip": true
+            },
+            "filter": {
+              "excludes": [
+                "**/armeabi-v7a/*.so",
+                "**/x86_64/*.so"
+              ]
+            }
           }
         }
       },
@@ -22,6 +33,17 @@
           "strictMode": {
             "caseSensitiveCheck": true,
             "useNormalizedOHMUrl": true
+          },
+          "nativeLib": {
+            "debugSymbol": {
+              "strip": true
+            },
+            "filter": {
+              "excludes": [
+                "**/armeabi-v7a/*.so",
+                "**/x86_64/*.so"
+              ]
+            }
           }
         }
       }

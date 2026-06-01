@@ -21,6 +21,8 @@ export class AppPrefer {
 
   private static readonly KEY_DNS_CACHE_ENABLED = "dns_cache_enabled"
 
+  private static readonly KEY_CAST_ENABLED = "cast_enabled"
+
   /** 默认缓存上限 512MB */
   public static readonly DEFAULT_CACHE_MAX_SIZE_MB: number = 512
 
@@ -82,6 +84,17 @@ export class AppPrefer {
 
   public setDnsCacheEnabled(enabled: boolean): void {
     this.preference.putSync(AppPrefer.KEY_DNS_CACHE_ENABLED, enabled)
+    this.preference.flush()
+  }
+
+  // ─── 投屏相关 ──────────────────────────────────────────────────────────────
+
+  public isCastEnabled(): boolean {
+    return this.preference.getSync(AppPrefer.KEY_CAST_ENABLED, true) as boolean
+  }
+
+  public setCastEnabled(enabled: boolean): void {
+    this.preference.putSync(AppPrefer.KEY_CAST_ENABLED, enabled)
     this.preference.flush()
   }
 
