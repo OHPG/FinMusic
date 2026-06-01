@@ -32,7 +32,7 @@ export struct PreferItem {
         .flexShrink(0)
       Text(this.tips)
         .fontSize(14)
-        .textAlign(TextAlign.RIGHT)
+        .textAlign(TextAlign.End)
         .fontColor($r('sys.color.ohos_id_color_text_secondary'))
         .visibility(this.tips ? Visibility.Visible : Visibility.None)
         .maxLines(1)
