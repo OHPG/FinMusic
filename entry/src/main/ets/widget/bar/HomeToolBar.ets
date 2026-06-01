@@ -1,6 +1,7 @@
 import { CommonConstants } from "../../common/CommonConstants"
-import { router, window } from "@kit.ArkUI"
+import { window } from "@kit.ArkUI"
 import { SourceMenu } from "../source/SourceMenu"
+import { AppRouter } from "../../router/AppRouter"
 
 @Component
 export struct HomeToolBar {
@@ -34,7 +35,7 @@ export struct HomeToolBar {
             .padding(8)
             .borderRadius(20)
             .onClick(() => {
-              router.pushUrl({ url: "pages/setting/SettingPage" })
+              AppRouter.goToSetting(this.getUIContext())
             })
         }
       }

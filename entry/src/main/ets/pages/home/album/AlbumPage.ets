@@ -1,9 +1,9 @@
 import { BaseItemDto, ImageType } from "@ohpg/jellyfin";
 import { AlbumViewModel } from "./AlbumViewModel";
-import { router, window } from "@kit.ArkUI";
+import { window } from "@kit.ArkUI";
 import { CommonConstants, GridRefreshView } from "@ohpg/fin-framework";
-import { MediaArgs } from "../../detail/MediaArgs";
 import { Repository } from "../../../data/Repository";
+import { AppRouter } from "../../../router/AppRouter";
 
 @Component
 export struct AlbumPage {
@@ -76,11 +76,7 @@ struct MediaItem {
         .maxLines(1)
     }
     .onClick(() => {
-      let args: MediaArgs = {
-        id: this.item?.Id!,
-        name: this.item?.Name!
-      }
-      router.pushUrl({url: 'pages/detail/album/AlbumPage', params: args})
+      AppRouter.goToAlbum(this.getUIContext(), this.item?.Id!, this.item?.Name!)
     })
   }
 

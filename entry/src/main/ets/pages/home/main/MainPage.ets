@@ -1,15 +1,14 @@
 import { CommonConstants, ListRefreshView } from "@ohpg/fin-framework"
 import { BaseItemDto, BaseItemKind, ImageType } from "@ohpg/jellyfin"
 import { Repository } from "../../../data/Repository"
-import { MediaArgs } from "../../detail/MediaArgs"
 import { MainCategory } from "./MainCategory"
 import { MainGroup } from "./MainGroup"
 import { MainViewModel } from "./MainViewModel"
-import { router, window } from "@kit.ArkUI"
+import { window } from "@kit.ArkUI"
 import { BreakpointSystem } from "@ohpg/fin-core"
 import { AppPlaybackManager } from "../../../player/AppPlaybackManager"
 import { AVPlaybackManager } from "@ohpg/player"
-import { PlayerRouter } from "@ohpg/widget"
+import { AppRouter } from "../../../router/AppRouter"
 
 @Component
 export struct MainPage {
@@ -62,17 +61,13 @@ export struct MainPage {
 
 async function onMainItemClick(context: UIContext, group: MainGroup, item: BaseItemDto) {
   if (item.Type === BaseItemKind.MusicAlbum) {
-    let args: MediaArgs = {
-      id: item.Id!,
-      name: item.Name!
-    }
-    router.pushUrl({url: 'pages/detail/album/AlbumPage', params: args})
+    AppRouter.goToAlbum(context, item.Id!, item.Name!)
   } else if (item.Type === BaseItemKind.Audio) {
     let playbackManager: AppPlaybackManager = AppStorage.get(AVPlaybackManager.AV_PLAYER_MANAGER)!
     console.info("FinMusic: onMainItemClick Audio id=" + item.Id)
     let result = playbackManager.playItems(group.items, item.Id!)
     console.info("FinMusic: onMainItemClick playAll result=" + result + ", pushing PlayerRouter")
-    PlayerRouter.push(context)
+    AppRouter.goToPlayer(context)
   }
 }
 

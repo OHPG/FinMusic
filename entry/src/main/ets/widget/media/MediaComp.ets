@@ -1,6 +1,6 @@
-import { router } from "@kit.ArkUI"
 import { avSession } from "@kit.AVSessionKit"
 import { AVPlayerContext, MediaControl } from "@ohpg/player"
+import { AppRouter } from "../../router/AppRouter"
 
 @Component
 export struct MediaMenu {
@@ -63,7 +63,7 @@ export struct MediaMenu {
         .fontSize($r('sys.float.Title_M'))
         .fontColor([$r('sys.color.font_primary')])
         .onClick(() => {
-          router.pushUrl({url: "pages/player/PlayerPage"})
+          AppRouter.goToPlayer(this.getUIContext())
         })
     }
   }

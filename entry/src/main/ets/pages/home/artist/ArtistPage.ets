@@ -2,8 +2,8 @@ import { CommonConstants, GridRefreshView } from "@ohpg/fin-framework";
 import { BaseItemDto, ImageType } from "@ohpg/jellyfin";
 import { Repository } from "../../../data/Repository";
 import { ArtistViewModel } from "./ArtistViewModel";
-import { router, window } from "@kit.ArkUI";
-import { MediaArgs } from "../../detail/MediaArgs";
+import { window } from "@kit.ArkUI";
+import { AppRouter } from "../../../router/AppRouter";
 
 @Component
 export struct ArtistPage {
@@ -72,11 +72,7 @@ struct ArtistListItem {
         .maxLines(1)
     }
     .onClick(() => {
-      let args: MediaArgs = {
-        id: this.item?.Id!,
-        name: this.item?.Name!
-      }
-      router.pushUrl({url: 'pages/detail/artist/ArtistPage', params: args})
+      AppRouter.goToArtist(this.getUIContext(), this.item?.Id!, this.item?.Name!)
     })
   }
 

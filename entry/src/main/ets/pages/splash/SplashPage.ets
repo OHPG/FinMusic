@@ -2,7 +2,7 @@ import { PrivacyDialog } from '@ohpg/fin-framework'
 import { Repository } from '../../data/Repository'
 import { AppPrefer } from '../../prefer/AppPrefer'
 import { FinRouter } from '@ohpg/fin-framework'
-import { router } from '@kit.ArkUI'
+import { AppRouter } from '../../router/AppRouter'
 
 @Entry
 @Component
@@ -64,7 +64,7 @@ struct SplashPage {
     await Promise.all([delay, init])
     let activeInfo = this.repository.getActiveInfo()
     if (activeInfo) {
-      router.replaceUrl({url: 'pages/home/HomePage'})
+      AppRouter.goToHome(this.getUIContext())
     } else {
       FinRouter.auth(this.getUIContext(), true)
     }

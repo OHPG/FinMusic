@@ -5,7 +5,7 @@ import { Repository } from '../../data/Repository'
 import { pasteboard } from '@kit.BasicServicesKit'
 import { groupAttributeModifier, itemDividerBuilder, windowAttributeModifier } from '../../style/Modifier'
 import { PreferItem } from '../../widget/comp/PreferItem'
-import router from '@ohos.router'
+import { AppRouter } from '../../router/AppRouter'
 
 @Entry
 @Component
@@ -52,13 +52,13 @@ struct SettingPage {
             PreferItem({
               icon: $r('sys.symbol.play_circle'),
               title: $r('app.string.prefer_playback'),
-              callback: () => { router.pushUrl({ url: "pages/setting/PlaybackSettingPage" }) }
+              callback: () => { AppRouter.goToPlaybackSetting(this.getUIContext()) }
             })
             itemDividerBuilder()
             PreferItem({
               icon: $r('sys.symbol.folder'),
               title: $r('app.string.prefer_cache'),
-              callback: () => { router.pushUrl({ url: "pages/setting/CacheSettingPage" }) }
+              callback: () => { AppRouter.goToCacheSetting(this.getUIContext()) }
             })
           }
           .attributeModifier(groupAttributeModifier)
@@ -68,7 +68,7 @@ struct SettingPage {
             PreferItem({
               icon: $r('sys.symbol.message'),
               title: $r('app.string.prefer_about'),
-              callback: () => { router.pushUrl({ url: "pages/about/AboutPage" }) }
+              callback: () => { AppRouter.goToAbout(this.getUIContext()) }
             })
             itemDividerBuilder()
             PreferItem({
