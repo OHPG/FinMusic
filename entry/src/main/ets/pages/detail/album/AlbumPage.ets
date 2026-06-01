@@ -10,6 +10,7 @@ import { AppPlaybackManager } from '../../../player/AppPlaybackManager'
 import { AVPlaybackManager } from '@ohpg/player'
 import { BreakpointSystem } from '@ohpg/fin-core'
 import { PlayerRouter } from '@ohpg/widget'
+import { TrackItem } from '../../../widget/item/TrackItem'
 
 @Entry
 @Component
@@ -223,174 +224,180 @@ struct AlbumPage {
 
   @Builder
   tabletLayout(group: GroupInfo) {
-    Row() {
-      // 左侧：封面 + 元数据 + 按钮
-      Column({ space: CommonConstants.SPACE_16 }) {
-        Image(this.repository?.buildImage(group.group!, ImageType.Primary))
-          .alt($r('app.media.default_cover'))
-          .objectFit(ImageFit.Cover)
-          .autoResize(true)
-          .width(260)
-          .aspectRatio(1)
-          .borderRadius(12)
-          .shadow(ShadowStyle.OUTER_DEFAULT_LG)
+    Stack({ alignContent: Alignment.Top }) {
+      // 主体：左侧固定 + 右侧独立滚动
+      Row() {
+        // 左侧：封面 + 元数据 + 按钮（固定不滚动）
+        Column({ space: CommonConstants.SPACE_16 }) {
+          // ToolBar 高度占位，避免内容被遮挡
+          Column()
+            .height(this.getToolBarHeight())
 
-        Text(group.group?.Name)
-          .fontSize(22)
-          .fontWeight(FontWeight.Bold)
-          .fontColor($r('sys.color.ohos_id_color_text_primary'))
-          .maxLines(2)
-          .textOverflow({ overflow: TextOverflow.Ellipsis })
-          .textAlign(TextAlign.Center)
+          Image(this.repository?.buildImage(group.group!, ImageType.Primary))
+            .alt($r('app.media.default_cover'))
+            .objectFit(ImageFit.Cover)
+            .autoResize(true)
+            .width(260)
+            .aspectRatio(1)
+            .borderRadius(12)
+            .shadow(ShadowStyle.OUTER_DEFAULT_LG)
 
-        Text(group.group?.AlbumArtist)
-          .fontSize(15)
-          .fontColor($r('sys.color.ohos_id_color_text_secondary'))
-
-        Row({ space: CommonConstants.SPACE_8 }) {
-          Text(group.group?.ProductionYear?.toString())
-            .fontSize(13)
-            .fontColor($r('sys.color.ohos_id_color_text_secondary'))
-            .visibility(group.group?.ProductionYear ? Visibility.Visible : Visibility.None)
-          Text(this.formatDuration(group.group?.RunTimeTicks))
-            .fontSize(13)
-            .fontColor($r('sys.color.ohos_id_color_text_secondary'))
-            .visibility(group.group?.RunTimeTicks ? Visibility.Visible : Visibility.None)
-          Text((group.items?.length ?? 0) + ' 首')
-            .fontSize(13)
-            .fontColor($r('sys.color.ohos_id_color_text_secondary'))
-        }
-
-        Column({ space: CommonConstants.SPACE_12 }) {
-          Button({ type: ButtonType.Capsule }) {
-            Row({ space: CommonConstants.SPACE_8 }) {
-              SymbolGlyph($r('sys.symbol.play_fill'))
-                .fontSize(18)
-                .fontColor([$r('sys.color.font_on_primary')])
-              Text($r('app.string.album_play_all'))
-                .fontSize(15)
-                .fontColor($r('sys.color.font_on_primary'))
-            }
-          }
-          .width(200)
-          .height(38)
-          .onClick(() => {
-            if (group.items && group.items.length > 0) {
-              this.playbackManager.playItems(group.items, group.items[0].Id!)
-              PlayerRouter.push(this.getUIContext())
-            }
-          })
-
-          Button({ type: ButtonType.Capsule }) {
-            Row({ space: CommonConstants.SPACE_8 }) {
-              SymbolGlyph($r('sys.symbol.shuffle'))
-                .fontSize(18)
-                .fontColor([$r('sys.color.ohos_id_color_text_primary')])
-              Text($r('app.string.album_shuffle'))
-                .fontSize(15)
-                .fontColor($r('sys.color.ohos_id_color_text_primary'))
-            }
-          }
-          .width(200)
-          .height(38)
-          .backgroundColor($r('sys.color.ohos_id_color_button_normal'))
-          .onClick(() => {
-            if (group.items && group.items.length > 0) {
-              let randomIndex = Math.floor(Math.random() * group.items.length)
-              this.playbackManager.playItems(group.items, group.items[randomIndex].Id!)
-              PlayerRouter.push(this.getUIContext())
-            }
-          })
-        }
-        .margin({ top: CommonConstants.SPACE_8 })
-      }
-      .alignItems(HorizontalAlign.Center)
-      .width('38%')
-      .padding({
-        top: this.getToolBarHeight(),
-        left: CommonConstants.SPACE_16,
-        right: CommonConstants.SPACE_16
-      })
-
-      // 右侧：曲目列表
-      Column() {
-        Row() {
-          SymbolGlyph($r('sys.symbol.play_circle_fill'))
-            .fontSize(28)
-            .fontColor([$r('sys.color.ohos_id_color_component_activated')])
-
-          Text($r('app.string.album_play_all_count', (group.items?.length ?? 0).toString()))
-            .fontSize(16)
-            .fontWeight(FontWeight.Medium)
+          Text(group.group?.Name)
+            .fontSize(22)
+            .fontWeight(FontWeight.Bold)
             .fontColor($r('sys.color.ohos_id_color_text_primary'))
-            .margin({ left: CommonConstants.SPACE_8 })
+            .maxLines(2)
+            .textOverflow({ overflow: TextOverflow.Ellipsis })
+            .textAlign(TextAlign.Center)
 
-          Blank()
-        }
-        .width(CommonConstants.FULL_PERCENT)
-        .height(48)
-        .padding({
-          left: CommonConstants.SPACE_16,
-          right: CommonConstants.SPACE_16
-        })
-        .onClick(() => {
-          if (group.items && group.items.length > 0) {
-            this.playbackManager.playItems(group.items, group.items[0].Id!)
-            PlayerRouter.push(this.getUIContext())
+          Text(group.group?.AlbumArtist)
+            .fontSize(15)
+            .fontColor($r('sys.color.ohos_id_color_text_secondary'))
+
+          Row({ space: CommonConstants.SPACE_8 }) {
+            Text(group.group?.ProductionYear?.toString())
+              .fontSize(13)
+              .fontColor($r('sys.color.ohos_id_color_text_secondary'))
+              .visibility(group.group?.ProductionYear ? Visibility.Visible : Visibility.None)
+            Text(this.formatDuration(group.group?.RunTimeTicks))
+              .fontSize(13)
+              .fontColor($r('sys.color.ohos_id_color_text_secondary'))
+              .visibility(group.group?.RunTimeTicks ? Visibility.Visible : Visibility.None)
+            Text((group.items?.length ?? 0) + ' 首')
+              .fontSize(13)
+              .fontColor($r('sys.color.ohos_id_color_text_secondary'))
           }
-        })
 
-        this.trackListBuilder(group)
+          Column({ space: CommonConstants.SPACE_12 }) {
+            Button({ type: ButtonType.Capsule }) {
+              Row({ space: CommonConstants.SPACE_8 }) {
+                SymbolGlyph($r('sys.symbol.play_fill'))
+                  .fontSize(18)
+                  .fontColor([$r('sys.color.font_on_primary')])
+                Text($r('app.string.album_play_all'))
+                  .fontSize(15)
+                  .fontColor($r('sys.color.font_on_primary'))
+              }
+            }
+            .width(200)
+            .height(38)
+            .onClick(() => {
+              if (group.items && group.items.length > 0) {
+                this.playbackManager.playItems(group.items, group.items[0].Id!)
+                PlayerRouter.push(this.getUIContext())
+              }
+            })
+
+            Button({ type: ButtonType.Capsule }) {
+              Row({ space: CommonConstants.SPACE_8 }) {
+                SymbolGlyph($r('sys.symbol.shuffle'))
+                  .fontSize(18)
+                  .fontColor([$r('sys.color.ohos_id_color_text_primary')])
+                Text($r('app.string.album_shuffle'))
+                  .fontSize(15)
+                  .fontColor($r('sys.color.ohos_id_color_text_primary'))
+              }
+            }
+            .width(200)
+            .height(38)
+            .backgroundColor($r('sys.color.ohos_id_color_button_normal'))
+            .onClick(() => {
+              if (group.items && group.items.length > 0) {
+                let randomIndex = Math.floor(Math.random() * group.items.length)
+                this.playbackManager.playItems(group.items, group.items[randomIndex].Id!)
+                PlayerRouter.push(this.getUIContext())
+              }
+            })
+          }
+          .margin({ top: CommonConstants.SPACE_8 })
+        }
+        .alignItems(HorizontalAlign.Center)
+        .justifyContent(FlexAlign.Start)
+        .width('38%')
+        .height(CommonConstants.FULL_PERCENT)
+        .padding({ left: CommonConstants.SPACE_16, right: CommonConstants.SPACE_16 })
+
+        // 右侧：曲目列表（独立滚动）
+        List() {
+          // 播放全部行
+          ListItem() {
+            Row() {
+              SymbolGlyph($r('sys.symbol.play_circle_fill'))
+                .fontSize(28)
+                .fontColor([$r('sys.color.ohos_id_color_component_activated')])
+
+              Text($r('app.string.album_play_all_count', (group.items?.length ?? 0).toString()))
+                .fontSize(16)
+                .fontWeight(FontWeight.Medium)
+                .fontColor($r('sys.color.ohos_id_color_text_primary'))
+                .margin({ left: CommonConstants.SPACE_8 })
+
+              Blank()
+            }
+            .width(CommonConstants.FULL_PERCENT)
+            .height(48)
+            .padding({ left: CommonConstants.SPACE_16, right: CommonConstants.SPACE_16 })
+            .onClick(() => {
+              if (group.items && group.items.length > 0) {
+                this.playbackManager.playItems(group.items, group.items[0].Id!)
+                PlayerRouter.push(this.getUIContext())
+              }
+            })
+          }
+
+          // 曲目列表
+          ForEach(group.items, (item: BaseItemDto, index: number) => {
+            ListItem() {
+              TrackItem({
+                item: item,
+                isFavorite: this.favoriteStates[index],
+                onPlay: () => {
+                  this.playbackManager.playItems(group.items!, item.Id!)
+                  PlayerRouter.push(this.getUIContext())
+                },
+                onFavoriteToggle: () => {
+                  this.toggleFavorite(item, index)
+                }
+              })
+            }
+          })
+        }
+        .layoutWeight(1)
+        .height(CommonConstants.FULL_PERCENT)
+        .contentStartOffset(this.getToolBarHeight())
+        .contentEndOffset(px2vp(this.avoidArea?.bottomRect.height))
+        .edgeEffect(EdgeEffect.Fade)
+        .scrollBar(BarState.Off)
       }
-      .layoutWeight(1)
-      .padding({ top: this.getToolBarHeight() })
+      .width(CommonConstants.FULL_PERCENT)
+      .height(CommonConstants.FULL_PERCENT)
+      .alignItems(VerticalAlign.Top)
+
+      // ToolBar：透明背景，固定显示标题和返回按钮
+      ToolBar({
+        title: this.args.name,
+        color: $r('sys.color.font_primary'),
+      })
+        .backgroundColor($r('sys.color.background_primary'))
     }
     .width(CommonConstants.FULL_PERCENT)
-    .alignItems(VerticalAlign.Top)
+    .height(CommonConstants.FULL_PERCENT)
   }
 
   @Builder
   trackListBuilder(group: GroupInfo) {
     Column({ space: 0 }) {
       ForEach(group.items, (item: BaseItemDto, index: number) => {
-        Row({ space: CommonConstants.SPACE_12 }) {
-          Column({ space: CommonConstants.SPACE_4 }) {
-            Text(item.Name)
-              .fontSize(15)
-              .fontWeight(FontWeight.Medium)
-              .fontColor($r('sys.color.ohos_id_color_text_primary'))
-              .maxLines(1)
-              .textOverflow({ overflow: TextOverflow.Ellipsis })
-              .width(CommonConstants.FULL_PERCENT)
-
-            Text(this.buildTrackSubtitle(item))
-              .fontSize(12)
-              .fontColor($r('sys.color.ohos_id_color_text_secondary'))
-              .maxLines(1)
-              .textOverflow({ overflow: TextOverflow.Ellipsis })
-              .width(CommonConstants.FULL_PERCENT)
+        TrackItem({
+          item: item,
+          isFavorite: this.favoriteStates[index],
+          onPlay: () => {
+            this.playbackManager.playItems(group.items!, item.Id!)
+            PlayerRouter.push(this.getUIContext())
+          },
+          onFavoriteToggle: () => {
+            this.toggleFavorite(item, index)
           }
-          .layoutWeight(1)
-
-          // 收藏按钮
-          SymbolGlyph(this.favoriteStates[index] ? $r('sys.symbol.heart_fill') : $r('sys.symbol.heart'))
-            .fontSize(20)
-            .fontColor([this.favoriteStates[index]
-              ? Color.Red
-              : $r('sys.color.ohos_id_color_text_secondary')])
-            .onClick(() => {
-              this.toggleFavorite(item, index)
-            })
-        }
-        .width(CommonConstants.FULL_PERCENT)
-        .height(60)
-        .padding({
-          left: CommonConstants.SPACE_16,
-          right: CommonConstants.SPACE_16
-        })
-        .onClick(() => {
-          this.playbackManager.playItems(group.items!, item.Id!)
-          PlayerRouter.push(this.getUIContext())
         })
       })
     }
@@ -398,84 +405,66 @@ struct AlbumPage {
   }
 
   build() {
-    Stack() {
-      Scroll(this.scroller) {
-        Column() {
-          // 手机布局
+    if (this.currentBreakpoint > WidthBreakpoint.WIDTH_SM) {
+      // 平板布局：tabletLayout 内部自己处理 Stack + ToolBar
+      if (this.group) {
+        this.tabletLayout(this.group)
+      } else {
+        Column()
+          .width(CommonConstants.FULL_PERCENT)
+          .height(CommonConstants.FULL_PERCENT)
+      }
+    } else {
+      // 手机布局：全局 Scroll + 渐变 ToolBar
+      Stack() {
+        Scroll(this.scroller) {
           Column() {
             if (this.group) {
               this.phoneLayout(this.group)
             }
           }
-          .visibility(this.currentBreakpoint <= WidthBreakpoint.WIDTH_SM ? Visibility.Visible : Visibility.None)
-
-          // 平板布局
-          Column() {
-            if (this.group) {
-              this.tabletLayout(this.group)
-            }
-          }
-          .visibility(this.currentBreakpoint > WidthBreakpoint.WIDTH_SM ? Visibility.Visible : Visibility.None)
+          .padding({ bottom: px2vp(this.avoidArea?.bottomRect.height) })
+          .width(CommonConstants.FULL_PERCENT)
         }
-        .padding({
-          bottom: px2vp(this.avoidArea?.bottomRect.height)
-        })
+        .align(Alignment.Top)
+        .edgeEffect(EdgeEffect.Fade)
+        .scrollBar(BarState.Off)
         .width(CommonConstants.FULL_PERCENT)
+        .height(CommonConstants.FULL_PERCENT)
+        .onDidScroll(() => {
+          let offset = this.scroller.currentOffset().yOffset
+          let startFade = 80
+          let endFade = 140
+          let progress = Math.min(Math.max((offset - startFade) / (endFade - startFade), 0), 1)
+          this.toolBarOpacity = progress
+          let collapsed = progress >= 1
+          if (collapsed !== this.headerCollapsed) {
+            this.headerCollapsed = collapsed
+          }
+        })
+
+        // ToolBar：滚动后切换为白底+标题
+        Stack() {
+          Column()
+            .width(CommonConstants.FULL_PERCENT)
+            .height(CommonConstants.FULL_PERCENT)
+            .backgroundColor($r('sys.color.background_primary'))
+            .opacity(this.toolBarOpacity)
+
+          ToolBar({
+            title: this.headerCollapsed ? this.args.name : undefined,
+            color: this.headerCollapsed
+              ? $r('sys.color.font_primary')
+              : $r('sys.color.font_on_primary'),
+          })
+        }
+        .width(CommonConstants.FULL_PERCENT)
+        .height(this.getToolBarHeight())
       }
-      .align(Alignment.Top)
-      .edgeEffect(EdgeEffect.Fade)
-      .scrollBar(BarState.Off)
+      .alignContent(Alignment.Top)
       .width(CommonConstants.FULL_PERCENT)
       .height(CommonConstants.FULL_PERCENT)
-      .onDidScroll(() => {
-        let offset = this.scroller.currentOffset().yOffset
-        // 头图内容高度 = 140vp，从 80vp 开始渐变，到 140vp 完全显示
-        let startFade = 80
-        let endFade = 140
-        let progress = Math.min(Math.max((offset - startFade) / (endFade - startFade), 0), 1)
-        this.toolBarOpacity = progress
-        let collapsed = progress >= 1
-        if (collapsed !== this.headerCollapsed) {
-          this.headerCollapsed = collapsed
-        }
-      })
-
-      // ToolBar：滚动后切换为白底+标题
-      Stack() {
-        // 白色背景（渐变显示）
-        Column()
-          .width(CommonConstants.FULL_PERCENT)
-          .height(CommonConstants.FULL_PERCENT)
-          .backgroundColor($r('sys.color.background_primary'))
-          .opacity(this.toolBarOpacity)
-
-        ToolBar({
-          title: this.headerCollapsed ? this.args.name : undefined,
-          color: this.headerCollapsed
-            ? $r('sys.color.font_primary')
-            : $r('sys.color.font_on_primary'),
-        })
-      }
-      .width(CommonConstants.FULL_PERCENT)
-      .height(this.getToolBarHeight())
     }
-    .alignContent(Alignment.Top)
-    .width(CommonConstants.FULL_PERCENT)
-    .height(CommonConstants.FULL_PERCENT)
-  }
-
-  private buildTrackSubtitle(item: BaseItemDto): string {
-    let parts: string[] = []
-    if (item.AlbumArtist) {
-      parts.push(item.AlbumArtist)
-    }
-    if (item.Album) {
-      parts.push(item.Album)
-    }
-    if (parts.length > 0) {
-      return parts.join(' - ')
-    }
-    return this.formatTrackDuration(item.RunTimeTicks)
   }
 
   private toggleAlbumFavorite(): void {
@@ -521,15 +510,5 @@ struct AlbumPage {
       return `${hours}h ${remainMinutes}min`
     }
     return `${minutes} min`
-  }
-
-  private formatTrackDuration(ticks?: number | null): string {
-    if (!ticks) {
-      return ''
-    }
-    let totalSeconds = Math.floor(ticks / 10000000)
-    let minutes = Math.floor(totalSeconds / 60)
-    let seconds = totalSeconds % 60
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`
   }
 }
